@@ -147,8 +147,10 @@ module_hist_ax.set_ylabel("Count", labelpad=20, size=12)
 plt.show()
 """
 
-# check duration between testing and learning (correct & wrong)
 
+# check duration between testing and learning (correct & wrong)
+# - (ver.1) duration between each 2 records
+"""
 # sort data by timestamp
 
 newdata = sorted(data, key=lambda k: k['timestamp']) 
@@ -201,6 +203,71 @@ for userId in range(10):
         wrong_hist_ax.set_ylabel("Count(wrong)", labelpad=20, size=12)
         plt.show()
     
+"""
 
+# check duration between testing and learning (correct & wrong)
+# - (ver.2) duration within each records
 
+correct_mean_larger_count = 0
+wrong_mean_larger_count = 0
+
+for userId in range(1678):
+    correct_duration = []
+    wrong_duration = []
+
+    for record in data:
+        if(record['user'] == userId):
+            
+            seen_dict = dict()
+            for exp in record['experience']:
+                if ( (exp['x'] == 'A') and ('m' not in exp.keys()) ): # correct answer
+                    if('w' in exp.keys() and exp['w'] in seen_dict):
+                        correct_duration.append( exp['t'] - seen_dict[exp['w']] )
+                    elif('w' in exp.keys()):
+                        correct_duration.append(-1)
+                elif ( (exp['x'] == 'A') and ('m' in exp.keys()) ): # wrong answer
+                    if('w' in exp.keys() and exp['w'] in seen_dict):
+                        wrong_duration.append( exp['t'] - seen_dict[exp['w']] )
+                    elif('w' in exp.keys()):
+                        wrong_duration.append(-1)
+                
+                if('w' in exp.keys()):
+                    seen_dict[exp['w']] = exp['t']
+
+    print('\n\nuser:')
+    print(userId)
+    correct_df = pd.DataFrame(correct_duration, columns=['duration'])
+    wrong_df = pd.DataFrame(wrong_duration, columns=['duration'])
+
+    print(len(correct_df))
+    print(len(wrong_df))
+    
+    correct_df = correct_df[correct_df['duration']>0]
+    wrong_df = wrong_df[wrong_df['duration']>0]
+
+    print('\ncorrect:')
+    print(correct_df.describe())
+    print('\nwrong:')
+    print(wrong_df.describe())
+
+    if(correct_df['duration'].mean() > wrong_df['duration'].mean()):
+        correct_mean_larger_count += 1
+    else:
+        wrong_mean_larger_count += 1
+    """
+    if( len(correct_df['duration'].unique()) > 0 ):
+        correct_hist_ax = correct_df['duration'].hist(bins=len(correct_df['duration'].unique()))
+        correct_hist_ax.set_xlabel("correct duration count", labelpad=20, size=12)
+        correct_hist_ax.set_ylabel("Count(correct)", labelpad=20, size=12)
+        plt.show()
+
+    if( len(wrong_df['duration'].unique()) > 0 ):
+        wrong_hist_ax = wrong_df['duration'].hist(bins=len(wrong_df['duration'].unique()))
+        wrong_hist_ax.set_xlabel("wrong duration count", labelpad=20, size=12)
+        wrong_hist_ax.set_ylabel("Count(wrong)", labelpad=20, size=12)
+        plt.show()
+    """
+
+print('correct mean larger count: %d' % correct_mean_larger_count)
+print('wrong mean larger count: %d' % wrong_mean_larger_count)
 
