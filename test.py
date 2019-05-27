@@ -36,7 +36,7 @@ for exp in data[3]['experience']:
     print(exp)
 """
 
-# construct list of each user id (may repeat)
+# [experiment 0] construct list of each user id (may repeat)
 """
 userList = []
 for ppl in data:
@@ -52,7 +52,7 @@ user_hist_ax.set_ylabel("Count", labelpad=20, size=12)
 plt.show()
 """
 
-# construct experience set
+# [experiment 1] construct experience set
 """
 experienceSet = set()
 for ppl in data:
@@ -91,7 +91,7 @@ for category, cateList in expDict.items():
     print('\n')
 """
 
-# check is_preview / not_preview accuracy
+# [experiment 2] check is_preview / not_preview accuracy
 """
 is_preview_no_acc = 0
 is_preview_has_acc = 0
@@ -148,17 +148,21 @@ plt.show()
 """
 
 
+# [experiment 3-1]
 # check duration between testing and learning (correct & wrong)
 # - (ver.1) duration between each 2 records
-"""
+
 # sort data by timestamp
+"""
 
-newdata = sorted(data, key=lambda k: k['timestamp']) 
+newdata = sorted(data, key=lambda k: k['timestamp'])
 
+correct_mean_larger_count = 0
+wrong_mean_larger_count = 0
 
 # for user 0 ~ 9:
 
-for userId in range(10):
+for userId in range(1678):
     seen_dict = dict()
     correct_duration = []
     wrong_duration = []
@@ -168,16 +172,18 @@ for userId in range(10):
 
             for exp in record['experience']:
                 if ( (exp['x'] == 'A') and ('m' not in exp.keys()) ): # correct answer
-                    if(exp['w'] in seen_dict):
+                    if('w' in exp.keys() and exp['w'] in seen_dict):
                         correct_duration.append( round( record['timestamp']/1000/60 ) - seen_dict[exp['w']] )
                     else:
                         correct_duration.append(-1)
                 elif ( (exp['x'] == 'A') and ('m' in exp.keys()) ): # wrong answer
-                    if(exp['w'] in seen_dict):
+                    if('w' in exp.keys() and exp['w'] in seen_dict):
                         wrong_duration.append( round( record['timestamp']/1000/60 ) - seen_dict[exp['w']] )
                     else:
                         wrong_duration.append(-1)
-                seen_dict[exp['w']] = round(record['timestamp']/1000/60)
+                
+                if('w' in exp.keys()):
+                    seen_dict[exp['w']] = round(record['timestamp']/1000/60)
 
     print('\n\nuser:')
     print(userId)
@@ -186,28 +192,46 @@ for userId in range(10):
     correct_df = pd.DataFrame(correct_duration, columns=['duration'])
     wrong_df = pd.DataFrame(wrong_duration, columns=['duration'])
 
+    print(len(correct_df))
+    print(len(wrong_df))
+
+    # remove duration <= 0
+    correct_df = correct_df[correct_df['duration']>0]
+    wrong_df = wrong_df[wrong_df['duration']>0]
+
     print('\ncorrect:')
     print(correct_df.describe())
     print('\nwrong:')
     print(wrong_df.describe())
 
-    if( len(correct_df['duration'].unique()) > 0 ):
-        correct_hist_ax = correct_df['duration'].hist(bins=len(correct_df['duration'].unique()))
-        correct_hist_ax.set_xlabel("correct duration count", labelpad=20, size=12)
-        correct_hist_ax.set_ylabel("Count(correct)", labelpad=20, size=12)
-        plt.show()
-
-    if( len(wrong_df['duration'].unique()) > 0 ):
-        wrong_hist_ax = wrong_df['duration'].hist(bins=len(wrong_df['duration'].unique()))
-        wrong_hist_ax.set_xlabel("wrong duration count", labelpad=20, size=12)
-        wrong_hist_ax.set_ylabel("Count(wrong)", labelpad=20, size=12)
-        plt.show()
+    if(correct_df['duration'].mean() > wrong_df['duration'].mean()):
+        correct_mean_larger_count += 1
+    else:
+        wrong_mean_larger_count += 1
     
+    # plot
+    # if( len(correct_df['duration'].unique()) > 0 ):
+    #     correct_hist_ax = correct_df['duration'].hist(bins=len(correct_df['duration'].unique()))
+    #     correct_hist_ax.set_xlabel("correct duration count", labelpad=20, size=12)
+    #     correct_hist_ax.set_ylabel("Count(correct)", labelpad=20, size=12)
+    #     plt.show()
+
+    # if( len(wrong_df['duration'].unique()) > 0 ):
+    #     wrong_hist_ax = wrong_df['duration'].hist(bins=len(wrong_df['duration'].unique()))
+    #     wrong_hist_ax.set_xlabel("wrong duration count", labelpad=20, size=12)
+    #     wrong_hist_ax.set_ylabel("Count(wrong)", labelpad=20, size=12)
+    #     plt.show()
+
+print('correct mean larger count: %d' % correct_mean_larger_count)
+print('wrong mean larger count: %d' % wrong_mean_larger_count)
 """
 
+
+
+# [experiment 3-2]
 # check duration between testing and learning (correct & wrong)
 # - (ver.2) duration within each records
-
+"""
 correct_mean_larger_count = 0
 wrong_mean_larger_count = 0
 
@@ -242,6 +266,7 @@ for userId in range(1678):
     print(len(correct_df))
     print(len(wrong_df))
     
+    # remove duration <= 0
     correct_df = correct_df[correct_df['duration']>0]
     wrong_df = wrong_df[wrong_df['duration']>0]
 
@@ -254,20 +279,38 @@ for userId in range(1678):
         correct_mean_larger_count += 1
     else:
         wrong_mean_larger_count += 1
-    """
-    if( len(correct_df['duration'].unique()) > 0 ):
-        correct_hist_ax = correct_df['duration'].hist(bins=len(correct_df['duration'].unique()))
-        correct_hist_ax.set_xlabel("correct duration count", labelpad=20, size=12)
-        correct_hist_ax.set_ylabel("Count(correct)", labelpad=20, size=12)
-        plt.show()
 
-    if( len(wrong_df['duration'].unique()) > 0 ):
-        wrong_hist_ax = wrong_df['duration'].hist(bins=len(wrong_df['duration'].unique()))
-        wrong_hist_ax.set_xlabel("wrong duration count", labelpad=20, size=12)
-        wrong_hist_ax.set_ylabel("Count(wrong)", labelpad=20, size=12)
-        plt.show()
-    """
+    # plot
+    # if( len(correct_df['duration'].unique()) > 0 ):
+    #     correct_hist_ax = correct_df['duration'].hist(bins=len(correct_df['duration'].unique()))
+    #     correct_hist_ax.set_xlabel("correct duration count", labelpad=20, size=12)
+    #     correct_hist_ax.set_ylabel("Count(correct)", labelpad=20, size=12)
+    #     plt.show()
+
+    # if( len(wrong_df['duration'].unique()) > 0 ):
+    #     wrong_hist_ax = wrong_df['duration'].hist(bins=len(wrong_df['duration'].unique()))
+    #     wrong_hist_ax.set_xlabel("wrong duration count", labelpad=20, size=12)
+    #     wrong_hist_ax.set_ylabel("Count(wrong)", labelpad=20, size=12)
+    #     plt.show()
 
 print('correct mean larger count: %d' % correct_mean_larger_count)
 print('wrong mean larger count: %d' % wrong_mean_larger_count)
+"""
+
+# test function of getting new features:
+
+logging.info('Start getting features')
+#testData = data[:5]
+res = getData.get_personal_data(
+    data, 
+    count_of_test = True,
+    count_of_learn=True, 
+    mean_accuracy=True, 
+    mean_response_time=True, 
+    mean_accuracy_letters=True,
+    mean_accuracy_phonics=True)
+
+logging.info('Getting features done')
+for i in range(len(res)):
+    print(res[i])
 
