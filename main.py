@@ -298,7 +298,7 @@ print('wrong mean larger count: %d' % wrong_mean_larger_count)
 """
 
 # test function of getting new features:
-
+"""
 logging.info('Start getting features')
 #testData = data[:5]
 res = getData.get_personal_data(
@@ -313,4 +313,56 @@ res = getData.get_personal_data(
 logging.info('Getting features done')
 for i in range(len(res)):
     print(res[i])
+
+"""
+
+# [Experiment 4] accuracy distribution of different scoring_models
+"""
+scoring_model_count = max( [ x['scoring_model'] for x in data ] ) + 1
+record_count_of_each_model = [0 for _ in range(scoring_model_count)]
+acc_sum_of_each_model = [0 for _ in range(scoring_model_count)]
+
+print(scoring_model_count)
+
+for record in data:
+    scoring_model_id = record['scoring_model']
+    if('accuracy' in record.keys()):
+        record_count_of_each_model[scoring_model_id] += 1
+        acc_sum_of_each_model[scoring_model_id] += record['accuracy']
+
+print(record_count_of_each_model)
+print(acc_sum_of_each_model)
+
+record_count_of_each_model = np.array(record_count_of_each_model)
+acc_sum_of_each_model = np.array(acc_sum_of_each_model)
+
+mean_acc_of_each_model = np.nan_to_num(acc_sum_of_each_model / record_count_of_each_model)
+print(mean_acc_of_each_model)
+
+plt.plot([i for i in range(scoring_model_count)], mean_acc_of_each_model, 'bo')
+plt.show()
+"""
+
+# [Experiment 5] accuracy distribution of different unit_modules
+
+module_count = max( [ x['unit_module'] for x in data ] ) + 1
+record_count_of_each_module = [0 for _ in range(module_count)]
+acc_sum_of_each_module = [0 for _ in range(module_count)]
+
+print(module_count)
+
+for record in data:
+    module_id = record['unit_module']
+    if('accuracy' in record.keys()):
+        record_count_of_each_module[module_id] += 1
+        acc_sum_of_each_module[module_id] += record['accuracy']
+
+record_count_of_each_module = np.array(record_count_of_each_module)
+acc_sum_of_each_module = np.array(acc_sum_of_each_module)
+
+mean_acc_of_each_module = np.nan_to_num(acc_sum_of_each_module / record_count_of_each_module)
+
+plt.plot([i for i in range(module_count)], mean_acc_of_each_module, 'bo')
+plt.show()
+
 

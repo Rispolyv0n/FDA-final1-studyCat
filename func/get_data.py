@@ -19,17 +19,18 @@ def get_personal_data(
     count_of_exp = False,
     hours_of_use = False,
     mean_response_time = False,
+    mean_learning_time = False, #
     mean_accuracy = False,
     # acc of different question categories
-    mean_accuracy_spot = False, #
-    mean_accuracy_numbers = False, #
-    mean_accuracy_phonics = False, #
-    mean_accuracy_phonemes = False, #
-    mean_accuracy_singplu = False, #
-    mean_accuracy_letters = False, #
-    mean_accuracy_abc = False, #
-    mean_accuracy_sight = False, #
-    mean_accuracy_others = False, #
+    mean_accuracy_spot = False,
+    mean_accuracy_numbers = False,
+    mean_accuracy_phonics = False,
+    mean_accuracy_phonemes = False,
+    mean_accuracy_singplu = False,
+    mean_accuracy_letters = False,
+    mean_accuracy_abc = False,
+    mean_accuracy_sight = False,
+    mean_accuracy_others = False,
     # acc of different score models (NOT DONE YET!!)
     mean_accuracy_model_a = False): #
 
@@ -148,12 +149,6 @@ def get_personal_data(
                             count_of_others_list[cur_userId] += 1
                             if('m' not in exp.keys()):
                                 correct_others_list[cur_userId] += 1
-
-    # test
-    print(count_of_letters_list)
-    print(correct_letters_list)
-    print(count_of_phonics_list)
-    print(correct_phonics_list)
 
     # integrate data of users
     for id in range(user_count):
