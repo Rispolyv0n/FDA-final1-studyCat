@@ -299,7 +299,7 @@ print('wrong mean larger count: %d' % wrong_mean_larger_count)
 
 
 # [Test Function] - get_data/get_personal_data
-
+"""
 logging.info('Start getting features')
 # testData = data[:5]
 res = getData.get_personal_data(
@@ -331,7 +331,7 @@ print_num = len(res)
 print_num = 200
 for i in range(print_num):
     print(res[i])
-
+"""
 
 
 # [Experiment 4] accuracy distribution of different scoring_models
@@ -391,4 +391,10 @@ print('outside:')
 print(a)
 """
 
+
+# [Test Function] - get_data/get_using_frequency
+"""
+freq = pd.DataFrame(getData.get_using_frequency(data), columns=['frequency'])
+print(freq.describe())
+"""
 

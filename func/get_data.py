@@ -1,6 +1,7 @@
 import json
 import numbers
 from statistics import mean
+from datetime import date
 
 import numpy as np
 import pandas as pd
@@ -43,15 +44,41 @@ def get_school_count_of_each_group(data):
         school_count_list.append(group_df['school'].max() + 1)
     return school_count_list
 
+def get_using_frequency(data):
+    user_count = max( [ x['user'] for x in data ] ) + 1
+    everyone_timestamp = [[] for _ in range(user_count)]
+    for record in data:
+        everyone_timestamp[record['user']].append(round(record['timestamp']/1000))
+    # sort
+    for i in range(user_count):
+        everyone_timestamp[i] = sorted(everyone_timestamp[i])
+    # all
+    freq_all = [] # here!
+    for one_timestamp in everyone_timestamp:
+        end_time = date.fromtimestamp(one_timestamp[-1])
+        start_time = date.fromtimestamp(one_timestamp[0])
+        freq_all.append((end_time - start_time).days/len(one_timestamp))
+    return freq_all
+
+def get_personal_old_data( # here!
+    data
+    ):
+    return
 
 def get_personal_data(
         data,
+        # count
         count_of_test = False,
         count_of_learn = False,
         count_of_exp = False,
+        # time
         hours_of_use = False,
         mean_response_time = False,
         mean_learning_time = False,
+        freq_all = False, #
+        freq_week = False, #
+        freq_month = False, #
+        # acc
         mean_accuracy = False,
         # acc of different question categories
         mean_accuracy_spot = False,
@@ -76,15 +103,21 @@ def get_personal_data(
     question_categories = ['spot', 'numbers', 'phonics', 'phonemes', 'singular', 'plural', 'letters', 'abc', 'sight']
     scoring_model_count = max([x['scoring_model'] for x in data]) + 1
 
+    # count
     count_of_record_list = [0 for _ in range(user_count)]
     count_of_exp_list = [0 for _ in range(user_count)]
     count_of_test_list = [0 for _ in range(user_count)]
     count_of_learn_list = [0 for _ in range(user_count)]
+
+    # time
     hours_of_use_list = [0 for _ in range(user_count)]
     response_time_list = [0 for _ in range(user_count)]
+
+    # acc
     count_of_accuracy_list = [0 for _ in range(user_count)]
     accuracy_list = [0 for _ in range(user_count)]
     
+    # acc - question category
     count_of_spot_list = [0 for _ in range(user_count)]
     count_of_numbers_list = [0 for _ in range(user_count)]
     count_of_phonics_list = [0 for _ in range(user_count)]
@@ -105,7 +138,10 @@ def get_personal_data(
     correct_sight_list = [0 for _ in range(user_count)]
     correct_others_list = [0 for _ in range(user_count)]
 
+    # acc - scoring_model
     count_of_accuracy_of_each_scoring_model = [[[] for _ in range(scoring_model_count)] for _ in range(user_count)]
+
+    # others
     id_of_school_id_list = [0 for _ in range(user_count)]
 
 
