@@ -50,7 +50,7 @@ def get_personal_data(
         count_of_exp = False,
         hours_of_use = False,
         mean_response_time = False,
-        mean_learning_time = False, #
+        mean_learning_time = False,
         mean_accuracy = False,
         # acc of different question categories
         mean_accuracy_spot = False,
@@ -62,7 +62,7 @@ def get_personal_data(
         mean_accuracy_abc = False,
         mean_accuracy_sight = False,
         mean_accuracy_others = False,
-        # acc of different score models (NOT DONE YET!!)
+        # acc of different score models
         mean_accuracy_model_a = False, #
         # others
         school_id = False
@@ -72,7 +72,9 @@ def get_personal_data(
     res = [dict() for _ in range(user_count)]
 
     school_count_of_groups_list = get_school_count_of_each_group(data)
+    question_categories = ['spot', 'numbers', 'phonics', 'phonemes', 'singular', 'plural', 'letters', 'abc', 'sight']
     
+
     count_of_record_list = [0 for _ in range(user_count)]
     count_of_exp_list = [0 for _ in range(user_count)]
     count_of_test_list = [0 for _ in range(user_count)]
@@ -104,100 +106,100 @@ def get_personal_data(
 
     id_of_school_id_list = [0 for _ in range(user_count)]
 
-    question_categories = ['spot', 'numbers', 'phonics', 'phonemes', 'singular', 'plural', 'letters', 'abc', 'sight']
 
     zero_exp_rec_count = 0
     for record in data:
         cur_userId = record['user']
         count_of_record_list[cur_userId] += 1
 
+        # mean_accuracy
         if('accuracy' in record.keys()):
-            if(mean_accuracy == True):
-                count_of_accuracy_list[cur_userId] += 1
-                accuracy_list[cur_userId] += record['accuracy']
+            count_of_accuracy_list[cur_userId] += 1
+            accuracy_list[cur_userId] += record['accuracy']
 
-        if(hours_of_use == True):
-            if(len(record['experience']) > 0):
-                hours_of_use_list[cur_userId] += record['experience'][-1]['t']
-            else:
-                zero_exp_rec_count += 1
+        # hours_of_use
+        if(len(record['experience']) > 0):
+            hours_of_use_list[cur_userId] += record['experience'][-1]['t']
+        else:
+            zero_exp_rec_count += 1
 
-        if(school_id == True):
-            ordinal_id = 0
-            for group_id in range(record['school_group']):
-                ordinal_id += school_count_of_groups_list[group_id]
-            ordinal_id += record['school']
-            id_of_school_id_list[cur_userId] = ordinal_id
+        # school_id
+        ordinal_id = 0
+        for group_id in range(record['school_group']):
+            ordinal_id += school_count_of_groups_list[group_id]
+        ordinal_id += record['school']
+        id_of_school_id_list[cur_userId] = ordinal_id
 
         for exp in record['experience']:
             count_of_exp_list[cur_userId] += 1
 
             if(exp['x'] == 'A'):
-                if(count_of_test == True):
-                    count_of_test_list[cur_userId] += 1
-                if(mean_response_time == True and 's' in exp.keys()):
+                # count_of_test
+                count_of_test_list[cur_userId] += 1
+                # mean_response_time
+                if('s' in exp.keys()):
                     response_time_list[cur_userId] += exp['s']
             elif(exp['x'] == 'X'):
-                if(count_of_learn == True):
-                    count_of_learn_list[cur_userId] += 1
+                # count_of_learn
+                count_of_learn_list[cur_userId] += 1
             
             if('w' in exp.keys()):
                 cur_word = exp['w']
                 if(isinstance(cur_word, numbers.Number)):
-                    if(mean_accuracy_numbers == True):
-                        count_of_numbers_list[cur_userId] += 1
-                        if('m' not in exp.keys()):
-                            correct_numbers_list[cur_userId] += 1
+                    # mean_acc_numbers
+                    count_of_numbers_list[cur_userId] += 1
+                    if('m' not in exp.keys()):
+                        correct_numbers_list[cur_userId] += 1
                 else:
                     if('_' in cur_word):
                         ind = cur_word.find('_')
                         cur_category = cur_word[:ind]
                         cur_category = cur_category.lower()
                         if(cur_category == 'spot'):
-                            if(mean_accuracy_spot == True):
-                                count_of_spot_list[cur_userId] += 1
-                                if('m' not in exp.keys()):
-                                    correct_spot_list[cur_userId] += 1
+                            # mean_acc_spot
+                            count_of_spot_list[cur_userId] += 1
+                            if('m' not in exp.keys()):
+                                correct_spot_list[cur_userId] += 1
                         elif(cur_category == 'phonics'):
-                            if(mean_accuracy_phonics == True):
-                                count_of_phonics_list[cur_userId] += 1
-                                if('m' not in exp.keys()):
-                                    correct_phonics_list[cur_userId] += 1
+                            # mean_acc_phonics
+                            count_of_phonics_list[cur_userId] += 1
+                            if('m' not in exp.keys()):
+                                correct_phonics_list[cur_userId] += 1
                         elif(cur_category == 'singular' or cur_category == 'plural'):
-                            if(mean_accuracy_singplu == True):
-                                count_of_singplu_list[cur_userId] += 1
-                                if('m' not in exp.keys()):
-                                    correct_singplu_list[cur_userId] += 1
+                            # mean_acc_singplu
+                            count_of_singplu_list[cur_userId] += 1
+                            if('m' not in exp.keys()):
+                                correct_singplu_list[cur_userId] += 1
                         elif(cur_category == 'phonemes'):
-                            if(mean_accuracy_phonemes == True):
-                                count_of_phonemes_list[cur_userId] += 1
-                                if('m' not in exp.keys()):
-                                    correct_phonemes_list[cur_userId] += 1
+                            # mean_acc_phonemes
+                            count_of_phonemes_list[cur_userId] += 1
+                            if('m' not in exp.keys()):
+                                correct_phonemes_list[cur_userId] += 1
                         elif(cur_category == 'letters'):
-                            if(mean_accuracy_letters == True):
-                                count_of_letters_list[cur_userId] += 1
-                                if('m' not in exp.keys()):
-                                    correct_letters_list[cur_userId] += 1
+                            # mean_acc_letters
+                            count_of_letters_list[cur_userId] += 1
+                            if('m' not in exp.keys()):
+                                correct_letters_list[cur_userId] += 1
                         elif(cur_category == 'abc'):
-                            if(mean_accuracy_abc == True):
-                                count_of_abc_list[cur_userId] += 1
-                                if('m' not in exp.keys()):
-                                    correct_abc_list[cur_userId] += 1
+                            # mean_acc_abc
+                            count_of_abc_list[cur_userId] += 1
+                            if('m' not in exp.keys()):
+                                correct_abc_list[cur_userId] += 1
                         elif(cur_category == 'sight'):
-                            if(mean_accuracy_sight == True):
-                                count_of_sight_list[cur_userId] += 1
-                                if('m' not in exp.keys()):
-                                    correct_sight_list[cur_userId] += 1
+                            # mean_acc_sight
+                            count_of_sight_list[cur_userId] += 1
+                            if('m' not in exp.keys()):
+                                correct_sight_list[cur_userId] += 1
                         else:
-                            if(mean_accuracy_others == True):
-                                count_of_others_list[cur_userId] += 1
-                                if('m' not in exp.keys()):
-                                    correct_others_list[cur_userId] += 1
-                    else:
-                        if(mean_accuracy_others == True):
+                            # mean_acc_others
                             count_of_others_list[cur_userId] += 1
                             if('m' not in exp.keys()):
                                 correct_others_list[cur_userId] += 1
+                    else:
+                        # mean_acc_others
+                        count_of_others_list[cur_userId] += 1
+                        if('m' not in exp.keys()):
+                            correct_others_list[cur_userId] += 1
 
     # integrate data of users
     for id in range(user_count):
@@ -219,6 +221,11 @@ def get_personal_data(
                 res[id]['mean_resp_time'] = -1
             else:
                 res[id]['mean_resp_time'] = response_time_list[id] / count_of_test_list[id]
+        if(mean_learning_time == True):
+            if(count_of_learn_list[id] == 0):
+                res[id]['mean_learn_time'] = -1
+            else:
+                res[id]['mean_learn_time'] = (hours_of_use_list[id] - response_time_list[id]) / count_of_learn_list[id]
         if(mean_accuracy_spot == True):
             if(count_of_spot_list[id] == 0):
                 res[id]['mean_acc_spot'] = -1

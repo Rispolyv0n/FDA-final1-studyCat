@@ -298,18 +298,18 @@ print('wrong mean larger count: %d' % wrong_mean_larger_count)
 """
 
 # [Test Function] - get_data/get_personal_data
-"""
+
 logging.info('Start getting features')
 # testData = data[:5]
 res = getData.get_personal_data(
     data, 
-    count_of_test = False,
-    count_of_learn = False,
-    count_of_exp = True,
+    count_of_test = True,
+    count_of_learn = True,
+    count_of_exp = False,
     hours_of_use = True,
-    mean_response_time = False,
-    mean_learning_time = False, #
-    mean_accuracy = True,
+    mean_response_time = True,
+    mean_learning_time = True, #
+    mean_accuracy = False,
     # acc of different question categories
     mean_accuracy_spot = False,
     mean_accuracy_numbers = False,
@@ -319,18 +319,18 @@ res = getData.get_personal_data(
     mean_accuracy_letters = False,
     mean_accuracy_abc = False,
     mean_accuracy_sight = False,
-    mean_accuracy_others = True,
+    mean_accuracy_others = False,
     # acc of different score models (NOT DONE YET!!)
     mean_accuracy_model_a = False, #
     # others
-    school_id = True)
+    school_id = False)
 
 logging.info('Getting features done')
 print_num = len(res)
-# print_num = 200
+print_num = 200
 for i in range(print_num):
     print(res[i])
-"""
+
 
 # [Experiment 4] accuracy distribution of different scoring_models
 """
