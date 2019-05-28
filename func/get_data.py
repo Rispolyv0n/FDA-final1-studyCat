@@ -1,5 +1,6 @@
 import json
 import numbers
+from statistics import mean
 
 import numpy as np
 import pandas as pd
@@ -63,7 +64,7 @@ def get_personal_data(
         mean_accuracy_sight = False,
         mean_accuracy_others = False,
         # acc of different score models
-        mean_accuracy_model_a = False, #
+        mean_accuracy_each_scoring_model = False,
         # others
         school_id = False
     ):
@@ -73,7 +74,7 @@ def get_personal_data(
 
     school_count_of_groups_list = get_school_count_of_each_group(data)
     question_categories = ['spot', 'numbers', 'phonics', 'phonemes', 'singular', 'plural', 'letters', 'abc', 'sight']
-    
+    scoring_model_count = max([x['scoring_model'] for x in data]) + 1
 
     count_of_record_list = [0 for _ in range(user_count)]
     count_of_exp_list = [0 for _ in range(user_count)]
@@ -104,6 +105,7 @@ def get_personal_data(
     correct_sight_list = [0 for _ in range(user_count)]
     correct_others_list = [0 for _ in range(user_count)]
 
+    count_of_accuracy_of_each_scoring_model = [[[] for _ in range(scoring_model_count)] for _ in range(user_count)]
     id_of_school_id_list = [0 for _ in range(user_count)]
 
 
@@ -116,6 +118,7 @@ def get_personal_data(
         if('accuracy' in record.keys()):
             count_of_accuracy_list[cur_userId] += 1
             accuracy_list[cur_userId] += record['accuracy']
+            count_of_accuracy_of_each_scoring_model[cur_userId][record['scoring_model']].append(record['accuracy'])
 
         # hours_of_use
         if(len(record['experience']) > 0):
@@ -271,6 +274,17 @@ def get_personal_data(
                 res[id]['mean_acc_others'] = -1
             else:
                 res[id]['mean_acc_others'] = correct_others_list[id] / count_of_others_list[id]
+        if(mean_accuracy_each_scoring_model == True):
+            if(count_of_accuracy_list[id] == 0):
+                res[id]['mean_acc_score_model'] = -1
+            else:
+                temp = []
+                for lst in count_of_accuracy_of_each_scoring_model[id]:
+                    if(len(lst) == 0):
+                        temp.append(-1)
+                    else:
+                        temp.append(mean(lst))
+                res[id]['mean_acc_score_model'] = temp.copy()
         if(school_id == True):
             res[id]['school_id'] = id_of_school_id_list[id]
     

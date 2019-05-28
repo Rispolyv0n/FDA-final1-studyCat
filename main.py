@@ -297,22 +297,23 @@ print('correct mean larger count: %d' % correct_mean_larger_count)
 print('wrong mean larger count: %d' % wrong_mean_larger_count)
 """
 
+
 # [Test Function] - get_data/get_personal_data
 
 logging.info('Start getting features')
 # testData = data[:5]
 res = getData.get_personal_data(
     data, 
-    count_of_test = True,
-    count_of_learn = True,
+    count_of_test = False,
+    count_of_learn = False,
     count_of_exp = False,
-    hours_of_use = True,
-    mean_response_time = True,
-    mean_learning_time = True, #
-    mean_accuracy = False,
+    hours_of_use = False,
+    mean_response_time = False,
+    mean_learning_time = False,
+    mean_accuracy = True,
     # acc of different question categories
-    mean_accuracy_spot = False,
-    mean_accuracy_numbers = False,
+    mean_accuracy_spot = True,
+    mean_accuracy_numbers = True,
     mean_accuracy_phonics = False,
     mean_accuracy_phonemes = False,
     mean_accuracy_singplu = False,
@@ -320,8 +321,8 @@ res = getData.get_personal_data(
     mean_accuracy_abc = False,
     mean_accuracy_sight = False,
     mean_accuracy_others = False,
-    # acc of different score models (NOT DONE YET!!)
-    mean_accuracy_model_a = False, #
+    # acc of different score models
+    mean_accuracy_each_scoring_model = True,
     # others
     school_id = False)
 
@@ -330,6 +331,7 @@ print_num = len(res)
 print_num = 200
 for i in range(print_num):
     print(res[i])
+
 
 
 # [Experiment 4] accuracy distribution of different scoring_models
@@ -388,6 +390,5 @@ a = getData.get_school_ordinal(data)
 print('outside:')
 print(a)
 """
-
 
 
