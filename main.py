@@ -297,23 +297,39 @@ print('correct mean larger count: %d' % correct_mean_larger_count)
 print('wrong mean larger count: %d' % wrong_mean_larger_count)
 """
 
-# test function of getting new features:
+# [Test Function] - get_data/get_personal_data
 """
 logging.info('Start getting features')
-#testData = data[:5]
+# testData = data[:5]
 res = getData.get_personal_data(
     data, 
-    count_of_test = True,
-    count_of_learn=True, 
-    mean_accuracy=True, 
-    mean_response_time=True, 
-    mean_accuracy_letters=True,
-    mean_accuracy_phonics=True)
+    count_of_test = False,
+    count_of_learn = False,
+    count_of_exp = True,
+    hours_of_use = True,
+    mean_response_time = False,
+    mean_learning_time = False, #
+    mean_accuracy = True,
+    # acc of different question categories
+    mean_accuracy_spot = False,
+    mean_accuracy_numbers = False,
+    mean_accuracy_phonics = False,
+    mean_accuracy_phonemes = False,
+    mean_accuracy_singplu = False,
+    mean_accuracy_letters = False,
+    mean_accuracy_abc = False,
+    mean_accuracy_sight = False,
+    mean_accuracy_others = True,
+    # acc of different score models (NOT DONE YET!!)
+    mean_accuracy_model_a = False, #
+    # others
+    school_id = True)
 
 logging.info('Getting features done')
-for i in range(len(res)):
+print_num = len(res)
+# print_num = 200
+for i in range(print_num):
     print(res[i])
-
 """
 
 # [Experiment 4] accuracy distribution of different scoring_models
@@ -344,7 +360,7 @@ plt.show()
 """
 
 # [Experiment 5] accuracy distribution of different unit_modules
-
+"""
 module_count = max( [ x['unit_module'] for x in data ] ) + 1
 record_count_of_each_module = [0 for _ in range(module_count)]
 acc_sum_of_each_module = [0 for _ in range(module_count)]
@@ -364,5 +380,14 @@ mean_acc_of_each_module = np.nan_to_num(acc_sum_of_each_module / record_count_of
 
 plt.plot([i for i in range(module_count)], mean_acc_of_each_module, 'bo')
 plt.show()
+"""
+
+# [Test Function] - get_data/get_school_ordinal
+"""
+a = getData.get_school_ordinal(data)
+print('outside:')
+print(a)
+"""
+
 
 
