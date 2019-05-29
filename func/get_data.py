@@ -2,11 +2,16 @@ import json
 import numbers
 import random
 from statistics import mean
+import datetime
 from datetime import date
 
 import numpy as np
 import pandas as pd
 
+
+# ==========
+# data processing for training
+# ==========
 
 def load(path, just_accs=False):
     with open(path) as f:
@@ -39,6 +44,11 @@ def generate_data_pair(acc_data, personal_data):
         break # here !!!
 
     return
+
+
+# ==========
+# get one feature
+# ==========
 
 def get_school_count_of_each_group(data):
     everyone_data = []
@@ -75,6 +85,59 @@ def get_using_frequency(data):
             freq_all.append(-1)
     return freq_all
 
+# correctness within short time(a record) to memorize
+def get_correctness_after_exposure(data):
+    user_count = max( [ x['user'] for x in data ] ) + 1
+    user_words_rec = [ dict.fromkeys(['count_all','count_correct'], 0) for _ in range(user_count)]
+    for record in data:
+        cur_userId = record['user']
+        seen_set = set()
+        for exp in record['experience']:
+            if('w' in exp.keys()):
+                cur_word = exp['w']
+                if(exp['x'] == 'X'):
+                    # exposure
+                    seen_set.add(cur_word)
+                else:
+                    # test
+                    if(cur_word in seen_set):
+                        user_words_rec[cur_userId]['count_all'] += 1
+                        if('m' not in exp.keys()):
+                            user_words_rec[cur_userId]['count_correct'] += 1
+
+    correct_np = np.array([x['count_correct'] for x in user_words_rec])
+    count_np = np.array([x['count_all'] for x in user_words_rec])
+
+    return correct_np / count_np
+
+# duration of each time using (hour)
+def mean_duration_each_record(data):
+    user_count = max( [ x['user'] for x in data ] ) + 1
+    user_timestamp_rec = [ [] for _ in range(user_count)]
+    for record in data:
+        cur_userId = record['user']
+        user_timestamp_rec[cur_userId].append(datetime.datetime.fromtimestamp(round(record['timestamp']/1000)))
+    user_mean_duration_rec = []
+    for one_user_timestamp in user_timestamp_rec:
+        one_user_timestamp.sort()
+        cur_count = 0
+        cur_duration_sum = datetime.timedelta()
+        for i in range(len(one_user_timestamp)-1):
+            cur_duration_sum += (one_user_timestamp[i+1] - one_user_timestamp[i])
+            cur_count += 1
+        if(cur_count == 0):
+            user_mean_duration_rec.append(-1)
+        else:
+            user_mean_duration_rec.append( round( (cur_duration_sum/cur_count).total_seconds() )/(60*60) )
+    return user_mean_duration_rec
+
+
+
+# ==========
+# extract features of each user
+# ==========
+
+
 def get_personal_old_data( data, col_name_list ):
     user_count = max( [ x['user'] for x in data ] ) + 1
     res = [dict() for _ in range(user_count)]
@@ -98,6 +161,7 @@ def get_personal_data(
         freq_all = False,
         freq_week = False, #
         freq_month = False, #
+        freq_duration = False,
         # acc
         mean_accuracy = False,
         # acc of different question categories
@@ -112,6 +176,8 @@ def get_personal_data(
         mean_accuracy_others = False,
         # acc of different score models
         mean_accuracy_each_scoring_model = False,
+        # other acc
+        accuracy_after_exposure = False,
         # others
         school_id = False
     ):
@@ -121,6 +187,7 @@ def get_personal_data(
 
     school_count_of_groups_list = get_school_count_of_each_group(data)
     using_frequency_list = get_using_frequency(data)
+    duration_between_records_list = mean_duration_each_record(data)
     question_categories = ['spot', 'numbers', 'phonics', 'phonemes', 'singular', 'plural', 'letters', 'abc', 'sight']
     scoring_model_count = max([x['scoring_model'] for x in data]) + 1
 
@@ -161,6 +228,9 @@ def get_personal_data(
 
     # acc - scoring_model
     count_of_accuracy_of_each_scoring_model = [[[] for _ in range(scoring_model_count)] for _ in range(user_count)]
+
+    # acc - exposure
+    accuracy_exposure_list = get_correctness_after_exposure(data)
 
     # others
     id_of_school_id_list = [0 for _ in range(user_count)]
@@ -342,10 +412,14 @@ def get_personal_data(
                     else:
                         temp.append(mean(lst))
                 res[id]['mean_acc_score_model'] = temp.copy()
+        if(accuracy_after_exposure == True):
+            res[id]['acc_exposure'] = accuracy_exposure_list[id]
         if(school_id == True):
             res[id]['school_id'] = id_of_school_id_list[id]
         if(freq_all == True):
             res[id]['freq_all'] = using_frequency_list[id]
+        if(freq_duration == True):
+            res[id]['freq_duration'] = mean_duration_each_record[id]
     
     return res
 

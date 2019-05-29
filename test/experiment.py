@@ -15,11 +15,11 @@ logging.basicConfig(level=logging.DEBUG,
             format='\n%(asctime)s %(name)-5s === %(levelname)-5s === %(message)s\n')
 
 logging.info('Initializing.')
-data_path = './newdata/data.json'
+data_path = './data/data.json'
 
 
 logging.info('Reading data.')
-data = getData.load(path=data_path, just_accs=True)
+data = getData.load(path=data_path, just_accs=False)
 
 
 logging.info('Finish Reading data.')
@@ -576,4 +576,38 @@ print(vocab_group_set)
 print(len(vocab_group_set))
 
 """
+
+# print all words in data
+"""
+word_group_set = set()
+for record in data:
+    for exp in record['experience']:
+        if('w' in exp.keys()):
+            word_group_set.add(exp['w'])
+print(len(word_group_set)) # 664
+"""
+
+
+# Correctness after exposure
+"""
+correctness = getData.get_correctness_after_exposure(data)
+print(len(correctness))
+correctness_df = pd.DataFrame(correctness, columns=['correctness'])
+print(correctness_df.describe())
+"""
+
+# Test Function - mean_duration_each_record
+mean_duration = getData.mean_duration_each_record(data)
+no_duration_count = 0
+for duration in mean_duration:
+    if(duration == -1):
+        no_duration_count += 1
+
+for i in range(10):
+    print(mean_duration[i])
+    print('---')
+
+print(len(mean_duration))
+print(no_duration_count)
+
 
