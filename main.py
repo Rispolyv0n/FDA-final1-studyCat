@@ -6,6 +6,7 @@ from collections import defaultdict
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 import func.get_data as getData
 
@@ -18,7 +19,7 @@ data_path = './data/data.json'
 
 
 logging.info('Reading data.')
-data = getData.load(path=data_path, just_accs=False)
+data = getData.load(path=data_path, just_accs=True)
 
 
 logging.info('Finish Reading data.')
@@ -31,9 +32,8 @@ for i in range(5):
     print(data[i])
     print(len(data[i]['experience']))
 
-print(data[3])
-for exp in data[3]['experience']:
-    print(exp)
+# for exp in data[3]['experience']:
+    # print(exp)
 """
 
 # [experiment 0] construct list of each user id (may repeat)
@@ -312,8 +312,8 @@ res = getData.get_personal_data(
     mean_learning_time = False,
     mean_accuracy = True,
     # acc of different question categories
-    mean_accuracy_spot = True,
-    mean_accuracy_numbers = True,
+    mean_accuracy_spot = False,
+    mean_accuracy_numbers = False,
     mean_accuracy_phonics = False,
     mean_accuracy_phonemes = False,
     mean_accuracy_singplu = False,
@@ -322,15 +322,15 @@ res = getData.get_personal_data(
     mean_accuracy_sight = False,
     mean_accuracy_others = False,
     # acc of different score models
-    mean_accuracy_each_scoring_model = True,
+    mean_accuracy_each_scoring_model = False,
     # others
     school_id = False)
 
 logging.info('Getting features done')
 print_num = len(res)
-print_num = 200
-for i in range(print_num):
-    print(res[i])
+# print_num = 200
+# for i in range(print_num):
+#     print(res[i])
 """
 
 
@@ -393,8 +393,87 @@ print(a)
 
 
 # [Test Function] - get_data/get_using_frequency
+# [Experiment 6] - using frequency & mean accuracy
 """
-freq = pd.DataFrame(getData.get_using_frequency(data), columns=['frequency'])
-print(freq.describe())
+res_df = pd.DataFrame(res, columns=['mean_acc'])
+print(res_df.shape)
+
+freq_df = pd.DataFrame(getData.get_using_frequency(data), columns=['frequency'])
+print(freq_df.describe())
+print(freq_df.shape)
+
+combined_df = pd.concat([res_df, freq_df], axis=1)
+# combined_df = combined_df[combined_df['mean_acc']>=0.9] # filter out low frequency
+print(combined_df.shape)
+print(combined_df)
+
+plt.figure(figsize = (10,10))
+sns.jointplot(x="frequency", y="mean_acc", color = 'darkorange', data=combined_df)
+plt.title('using frequency V.S. mean accuracy',size = 15)
+plt.show()
 """
+
+
+# [Test Function] - get_data/get_personal_old_data
+# [Experiment 7] - unit_module VS score_model VS accuracy
+# !! should extract data with accuracy only !!
+"""
+old_res = getData.get_personal_old_data(data, ['unit_module', 'accuracy', 'scoring_model'])
+
+old_res_lst = []
+for one_res in old_res:
+    if(len(one_res)==3):
+        old_res_lst.append([one_res['unit_module'], one_res['accuracy'], one_res['scoring_model']])
+    else:
+        old_res_lst.append([-1,-1,-1])
+
+temp_np = np.array(old_res_lst)
+old_res_pd = pd.DataFrame(old_res_lst, columns=['unit_module', 'accuracy', 'scoring_model'])
+old_res_pd = old_res_pd[old_res_pd['accuracy']>=0]
+print(old_res_pd.shape)
+
+# plot
+plt.figure(figsize = (10,8))
+plt.scatter(
+    old_res_pd['unit_module'], 
+    old_res_pd['scoring_model'] ,
+    c=old_res_pd['accuracy'], 
+    cmap = 'hot', 
+    s=20)
+ax = plt.gca()
+ax.set_facecolor('lightslategray')
+plt.colorbar().set_label('accuracy', fontsize=14)
+plt.xlabel('unit_module_id', fontsize=14)
+plt.ylabel('scoring_model_id', fontsize=14)
+plt.title('accuracy with unit_module & scoring_model', fontsize=17)
+plt.show()
+
+"""
+
+# [Test Function] - get_data/split_train_test
+data = getData.get_personal_old_data(data, ['user', 'accuracy'])
+print('len1')
+print(len(data))
+data = list(filter(None, data))
+print('len2')
+print(len(data))
+data = data[:500]
+for i in range(len(data)):
+    if(len(data[i]) != 2):
+        print(data[i])
+print('len3')
+print(len(data))
+for i in range(5):
+    print(data[i])
+
+train_data, test_data = getData.split_train_test(data, 0.8)
+print('train:')
+print(len(train_data))
+for i in range(5):
+    print(train_data[i])
+print('test:')
+print(len(test_data))
+for i in range(5):
+    print(test_data[i])
+
 

@@ -1,5 +1,6 @@
 import json
 import numbers
+import random
 from statistics import mean
 from datetime import date
 
@@ -17,6 +18,16 @@ def load(path, just_accs=False):
 def filter_accs(data):
     """Filters out just the records with accuracies."""
     return [x for x in data if 'accuracy' in x.keys()]
+
+def split_train_test(data, train_ratio):
+    data_count = len(data)
+    random.shuffle(data)
+    train_max_id = round(data_count*train_ratio)
+    train_data = []
+    test_data = []
+    train_data = data[:train_max_id]
+    test_data = data[train_max_id:]
+    return train_data, test_data
 
 def generate_data_pair(acc_data, personal_data):
     n_teachers = max([x['teacher'] for x in acc_data]) + 1
@@ -53,17 +64,26 @@ def get_using_frequency(data):
     for i in range(user_count):
         everyone_timestamp[i] = sorted(everyone_timestamp[i])
     # all
-    freq_all = [] # here!
+    freq_all = []
     for one_timestamp in everyone_timestamp:
         end_time = date.fromtimestamp(one_timestamp[-1])
         start_time = date.fromtimestamp(one_timestamp[0])
-        freq_all.append((end_time - start_time).days/len(one_timestamp))
+        use_day_duration = (end_time - start_time).days
+        if(use_day_duration>0):
+            freq_all.append(len(one_timestamp)/use_day_duration)
+        else:
+            freq_all.append(-1)
     return freq_all
 
-def get_personal_old_data( # here!
-    data
-    ):
-    return
+def get_personal_old_data( data, col_name_list ):
+    user_count = max( [ x['user'] for x in data ] ) + 1
+    res = [dict() for _ in range(user_count)]
+
+    for record in data:
+        cur_userId = record['user']
+        for col_name in col_name_list:
+            res[cur_userId][col_name] = record[col_name]
+    return res
 
 def get_personal_data(
         data,
@@ -75,7 +95,7 @@ def get_personal_data(
         hours_of_use = False,
         mean_response_time = False,
         mean_learning_time = False,
-        freq_all = False, #
+        freq_all = False,
         freq_week = False, #
         freq_month = False, #
         # acc
@@ -100,6 +120,7 @@ def get_personal_data(
     res = [dict() for _ in range(user_count)]
 
     school_count_of_groups_list = get_school_count_of_each_group(data)
+    using_frequency_list = get_using_frequency(data)
     question_categories = ['spot', 'numbers', 'phonics', 'phonemes', 'singular', 'plural', 'letters', 'abc', 'sight']
     scoring_model_count = max([x['scoring_model'] for x in data]) + 1
 
@@ -323,6 +344,8 @@ def get_personal_data(
                 res[id]['mean_acc_score_model'] = temp.copy()
         if(school_id == True):
             res[id]['school_id'] = id_of_school_id_list[id]
+        if(freq_all == True):
+            res[id]['freq_all'] = using_frequency_list[id]
     
     return res
 
