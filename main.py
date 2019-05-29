@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.DEBUG,
             format='\n%(asctime)s %(name)-5s === %(levelname)-5s === %(message)s\n')
 
 logging.info('Initializing.')
-data_path = './data/data.json'
+data_path = './newdata/data.json'
 
 
 logging.info('Reading data.')
@@ -304,12 +304,18 @@ logging.info('Start getting features')
 # testData = data[:5]
 res = getData.get_personal_data(
     data, 
+    # count
     count_of_test = False,
     count_of_learn = False,
     count_of_exp = False,
+    # time
     hours_of_use = False,
     mean_response_time = False,
     mean_learning_time = False,
+    freq_all = True,
+    freq_week = False, #
+    freq_month = False, #
+    # acc
     mean_accuracy = True,
     # acc of different question categories
     mean_accuracy_spot = False,
@@ -393,7 +399,7 @@ print(a)
 
 
 # [Test Function] - get_data/get_using_frequency
-# [Experiment 6] - using frequency & mean accuracy
+# [Experiment 6-1] - using frequency & mean accuracy
 """
 res_df = pd.DataFrame(res, columns=['mean_acc'])
 print(res_df.shape)
@@ -410,6 +416,35 @@ print(combined_df)
 plt.figure(figsize = (10,10))
 sns.jointplot(x="frequency", y="mean_acc", color = 'darkorange', data=combined_df)
 plt.title('using frequency V.S. mean accuracy',size = 15)
+plt.show()
+"""
+
+# [Experiment 6-2] - using frequency & mean accuracy
+"""
+res_df = pd.DataFrame([[rec['mean_acc'], rec['freq_all']] for rec in res], columns=['mean_acc', 'freq_all'])
+res_df = res_df[res_df['freq_all']>=0]
+res_df = res_df[res_df['mean_acc']>=0]
+
+res_df.sort_values(by=['freq_all'], inplace=True)
+
+mean_freq_lst = []
+mean_acc_lst = []
+spaceNum = round(res_df.shape[0]/10)
+for g, df in res_df.groupby(np.arange(len(res_df)) // spaceNum):
+    mean_freq_lst.append(df['freq_all'].mean())
+    mean_acc_lst.append(df['mean_acc'].mean())
+
+# plot
+plt.figure(figsize = (10,8))
+plt.scatter(
+    mean_freq_lst, 
+    mean_acc_lst,
+    s=20)
+# ax = plt.gca()
+# ax.set_facecolor('lightslategray')
+plt.xlabel('mean_frequency', fontsize=14)
+plt.ylabel('mean_accuracy', fontsize=14)
+plt.title('mean_freq VS mean_acc', fontsize=17)
 plt.show()
 """
 
@@ -451,6 +486,7 @@ plt.show()
 """
 
 # [Test Function] - get_data/split_train_test
+"""
 data = getData.get_personal_old_data(data, ['user', 'accuracy'])
 print('len1')
 print(len(data))
@@ -475,5 +511,69 @@ print('test:')
 print(len(test_data))
 for i in range(5):
     print(test_data[i])
+"""
 
+
+# [Experiment 8] question category VS mean accuracy
+# just_acc should be True or False lahahahhaha
+"""
+correct_count = dict()
+all_count = dict()
+for record in data:
+    for exp in record['experience']:
+        if(exp['x'] == 'A' and 'w' in exp.keys()):
+            cur_word = exp['w']
+            if(isinstance(cur_word, numbers.Number)):
+                if('numbers' not in all_count.keys()):
+                    all_count['numbers'] = 1
+                else:
+                    all_count['numbers'] += 1
+                if('m' not in exp.keys()):
+                    if('numbers' not in correct_count.keys()):
+                        correct_count['numbers'] = 1
+                    else:
+                        correct_count['numbers'] += 1
+            else:
+                if('_' in cur_word):
+                    ind = cur_word.find('_')
+                    cur_category = cur_word[:ind]
+                    cur_category = cur_category.lower()
+                    if(cur_category not in all_count.keys()):
+                        all_count[cur_category] = 1
+                    else:
+                        all_count[cur_category] += 1
+                    if('m' not in exp.keys()):
+                        if(cur_category not in correct_count.keys()):
+                            correct_count[cur_category] = 1
+                        else:
+                            correct_count[cur_category] += 1
+print(all_count)
+print(correct_count)
+
+category_name = []
+category_acc = []
+question_categories = ['spot', 'numbers', 'phonics', 'phonemes', 'singular', 'plural', 'letters', 'abc', 'sight']
+
+for key_name in all_count.keys():
+    if(key_name in correct_count.keys() and key_name in question_categories):
+        category_name.append(key_name)
+        category_acc.append(correct_count[key_name]/all_count[key_name])
+
+# plot
+plt.bar(np.arange(len(category_acc)), category_acc)
+plt.xticks(np.arange(len(category_name)), category_name)
+plt.show()
+
+"""
+
+# print all vocab_group in newdata QQ
+"""
+vocab_group_set = set()
+for record in data:
+    for group_name in record['vocab_groups']:
+        vocab_group_set.add(group_name)
+print(vocab_group_set)
+print(len(vocab_group_set))
+
+"""
 
