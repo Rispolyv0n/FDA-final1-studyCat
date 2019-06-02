@@ -34,7 +34,7 @@ def split_train_test(data, train_ratio):
     test_data = data[train_max_id:]
     return train_data, test_data
 
-def generate_data_pair(acc_data, personal_data):
+def generate_data_pair_for(acc_data, personal_data):
     n_teachers = max([x['teacher'] for x in acc_data]) + 1
     n_classes = max([x['class'] for x in acc_data]) + 1
     n_levels = max([x['level'] for x in acc_data]) + 1
@@ -340,7 +340,7 @@ def get_personal_data(
         if(count_of_exp == True):
             res[id]['exp_count'] = count_of_exp_list[id]
         if(hours_of_use == True):
-            res[id]['hours_use'] = hours_of_use_list[id]
+            res[id]['hours_use'] = hours_of_use_list[id]/60/60
         if(mean_accuracy == True):
             if(count_of_accuracy_list[id] == 0):
                 res[id]['mean_acc'] = -1
@@ -419,7 +419,7 @@ def get_personal_data(
         if(freq_all == True):
             res[id]['freq_all'] = using_frequency_list[id]
         if(freq_duration == True):
-            res[id]['freq_duration'] = mean_duration_each_record[id]
+            res[id]['freq_duration'] = duration_between_records_list[id]
     
     return res
 
