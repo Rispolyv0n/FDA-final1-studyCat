@@ -37,9 +37,8 @@ def split_train_test(data, train_ratio):
 def generate_data_pair_for(acc_data, personal_data):
     n_teachers = max([x['teacher'] for x in acc_data]) + 1
     n_classes = max([x['class'] for x in acc_data]) + 1
-    n_levels = max([x['level'] for x in acc_data]) + 1
     n_schools = max([x['school'] for x in acc_data]) + 1 # here!!!
-    n_features = n_teachers + n_classes + n_levels + n_schools + len(personal_data[i])
+    n_features = n_teachers + n_classes + n_schools + len(personal_data[i])
     for record in acc_data:
         break # here !!!
 
