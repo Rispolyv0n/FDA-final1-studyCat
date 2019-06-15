@@ -12,7 +12,7 @@ import func.get_data as getData
 import func.plot as getPlot
 
 # Initializing
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.INFO,
             format='\n%(asctime)s %(name)-5s === %(levelname)-5s === %(message)s\n')
 logging.info('Initializing.')
 

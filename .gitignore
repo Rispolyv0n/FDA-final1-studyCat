@@ -1,4 +1,5 @@
 /data/*
 /newdata/*
 /m_test/*
+/presentation/*
 __pycache__/
