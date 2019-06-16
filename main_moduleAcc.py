@@ -2,6 +2,7 @@ import datetime
 import logging
 import numbers
 import random
+import math
 import sys
 from collections import defaultdict
 
@@ -26,8 +27,8 @@ def train_model(model, train_x, train_y, test_x, test_y, model_name):
     model.fit(train_x, train_y)
     train_pred = model.predict(train_x)
     test_pred = model.predict(test_x)
-    logging.info('Training mse: %.8f' % mean_squared_error(train_y, train_pred))
-    logging.info('Testing mse: %.8f' % mean_squared_error(test_y, test_pred))
+    logging.info('Training rmse: %.8f' % math.sqrt(mean_squared_error(train_y, train_pred)))
+    logging.info('Testing rmse: %.8f' % math.sqrt(mean_squared_error(test_y, test_pred)))
     return
 
 # Initializing
@@ -294,25 +295,25 @@ test_df['is_preview'] = test_df['is_preview'].astype(int)
 # Final features...
 logging.info('Final features:')
 
-# mse *
+# mse 0.0303
 feature_list = [
     # 'test_count',
     # 'learn_count',
     # 'exp_count',
     # 'hours_use',
-    'mean_learn_time',
-    'mean_resp_time',
+    # 'mean_learn_time',
+    # 'mean_resp_time',
     # 'freq_all',
     # 'freq_duration',
     'mean_acc',
     'acc_exposure', 
     'learn_ratio',
-    'cut_test_count',
-    'cut_learn_count',
+    # 'cut_test_count',
+    # 'cut_learn_count',
     'cut_exp_count',
     'cut_hours_use',
-    # 'cut_mean_learn_time',
-    # 'cut_mean_resp_time',
+    'cut_mean_learn_time',
+    'cut_mean_resp_time',
     'cut_freq_all', 
     'cut_freq_duration', 
     # 'cut_acc_exposure', 
@@ -328,39 +329,6 @@ feature_list = [
     'mean_acc_unit'
 ]
 
-# # mse 0.0303
-# feature_list = [
-#     # 'test_count',
-#     # 'learn_count',
-#     # 'exp_count',
-#     # 'hours_use',
-#     # 'mean_learn_time',
-#     # 'mean_resp_time',
-#     # 'freq_all',
-#     # 'freq_duration',
-#     'mean_acc',
-#     'acc_exposure', 
-#     'learn_ratio',
-#     # 'cut_test_count',
-#     # 'cut_learn_count',
-#     'cut_exp_count',
-#     'cut_hours_use',
-#     'cut_mean_learn_time',
-#     'cut_mean_resp_time',
-#     'cut_freq_all', 
-#     'cut_freq_duration', 
-#     # 'cut_acc_exposure', 
-#     # 'cut_learn_ratio',
-#     'school_id',
-#     'is_preview',
-#     'unit_module',
-#     'scoring_model',
-#     'level',
-#     'teacher',
-#     'class',
-#     'mean_acc_score_model',
-#     'mean_acc_unit'
-# ]
 target_feature_name = 'accuracy'
 print(feature_list)
 print(len(feature_list))
@@ -368,14 +336,14 @@ print(len(feature_list))
 
 # Feature scaling
 
-logging.info('Feature scaling.')
-scaler = StandardScaler()
-scaler.fit(train_df[feature_list])
-train_df[feature_list] = scaler.transform(train_df[feature_list])
-test_df[feature_list] = scaler.transform(test_df[feature_list])
-print(train_df.head(3))
-print(train_df.shape)
-print(test_df.shape)
+# logging.info('Feature scaling.')
+# scaler = StandardScaler()
+# scaler.fit(train_df[feature_list])
+# train_df[feature_list] = scaler.transform(train_df[feature_list])
+# test_df[feature_list] = scaler.transform(test_df[feature_list])
+# print(train_df.head(3))
+# print(train_df.shape)
+# print(test_df.shape)
 
 # Train !
 
