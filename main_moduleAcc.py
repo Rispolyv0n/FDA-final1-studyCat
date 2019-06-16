@@ -164,28 +164,28 @@ logging.info('Converting training dict to dataframe & filter features.')
 # train_acc_data_with_exp = list(filter(lambda x: 'test_count' in x.keys(), train_acc_data))
 
 train_df = pd.DataFrame(data={
-    # 'test_count':[x['test_count'] for x in train_acc_data],
-    # 'learn_count':[x['learn_count'] for x in train_acc_data],
-    # 'exp_count':[x['exp_count'] for x in train_acc_data],
-    # 'hours_use':[x['hours_use'] for x in train_acc_data],
-    # 'mean_learn_time':[x['mean_learn_time'] for x in train_acc_data],
-    # 'mean_resp_time':[x['mean_resp_time'] for x in train_acc_data],
-    # 'freq_all':[x['freq_all'] for x in train_acc_data],
-    # 'freq_duration':[x['freq_duration'] for x in train_acc_data],
+    'test_count':[x['test_count'] for x in train_acc_data],
+    'learn_count':[x['learn_count'] for x in train_acc_data],
+    'exp_count':[x['exp_count'] for x in train_acc_data],
+    'hours_use':[x['hours_use'] for x in train_acc_data],
+    'mean_learn_time':[x['mean_learn_time'] for x in train_acc_data],
+    'mean_resp_time':[x['mean_resp_time'] for x in train_acc_data],
+    'freq_all':[x['freq_all'] for x in train_acc_data],
+    'freq_duration':[x['freq_duration'] for x in train_acc_data],
     'mean_acc':[x['mean_acc'] for x in train_acc_data],
     'acc_exposure':[x['acc_exposure'] for x in train_acc_data],
     'learn_ratio':[x['learn_ratio'] for x in train_acc_data], # too similar with other columns
     'accuracy':[x['accuracy'] for x in train_acc_data],
-    # 'cut_test_count':[x['cut_test_count'] for x in train_acc_data], # too similar with other columns
-    # 'cut_learn_count':[x['cut_learn_count'] for x in train_acc_data], # too similar with other columns
+    'cut_test_count':[x['cut_test_count'] for x in train_acc_data], # too similar with other columns
+    'cut_learn_count':[x['cut_learn_count'] for x in train_acc_data], # too similar with other columns
     'cut_exp_count':[x['cut_exp_count'] for x in train_acc_data], # too similar with other columns
     'cut_hours_use':[x['cut_hours_use'] for x in train_acc_data],
     'cut_mean_learn_time':[x['cut_mean_learn_time'] for x in train_acc_data],
     'cut_mean_resp_time':[x['cut_mean_resp_time'] for x in train_acc_data],
     'cut_freq_all':[x['cut_freq_all'] for x in train_acc_data],
     'cut_freq_duration':[x['cut_freq_duration'] for x in train_acc_data],
-    # 'cut_acc_exposure':[x['cut_acc_exposure'] for x in train_acc_data],
-    # 'cut_learn_ratio':[x['cut_learn_ratio'] for x in train_acc_data],
+    'cut_acc_exposure':[x['cut_acc_exposure'] for x in train_acc_data],
+    'cut_learn_ratio':[x['cut_learn_ratio'] for x in train_acc_data],
     'school_id':[x['school_id'] for x in train_acc_data],
     'is_preview':[x['is_preview'] for x in train_acc_data],
     'unit_module':[x['unit_module'] for x in train_acc_data],
@@ -242,28 +242,28 @@ logging.info('Converting testing dict to dataframe & filter features.')
 # test_acc_data_with_exp = list(filter(lambda x: 'test_count' in x.keys(), test_acc_data))
 
 test_df = pd.DataFrame(data={
-    # 'test_count':[x['test_count'] for x in test_acc_data],                    # too similar with other columns
-    # 'learn_count':[x['learn_count'] for x in test_acc_data],                  # too similar with other columns
-    # 'exp_count':[x['exp_count'] for x in test_acc_data],                      # use cut
-    # 'hours_use':[x['hours_use'] for x in test_acc_data],                      # use cut
-    # 'mean_learn_time':[x['mean_learn_time'] for x in test_acc_data],          # use cut
-    # 'mean_resp_time':[x['mean_resp_time'] for x in test_acc_data],            # use cut
-    # 'freq_all':[x['freq_all'] for x in test_acc_data],                        # use cut
-    # 'freq_duration':[x['freq_duration'] for x in test_acc_data],              # use cut
+    'test_count':[x['test_count'] for x in test_acc_data],                    # too similar with other columns
+    'learn_count':[x['learn_count'] for x in test_acc_data],                  # too similar with other columns
+    'exp_count':[x['exp_count'] for x in test_acc_data],                      # use cut
+    'hours_use':[x['hours_use'] for x in test_acc_data],                      # use cut
+    'mean_learn_time':[x['mean_learn_time'] for x in test_acc_data],          # use cut
+    'mean_resp_time':[x['mean_resp_time'] for x in test_acc_data],            # use cut
+    'freq_all':[x['freq_all'] for x in test_acc_data],                        # use cut
+    'freq_duration':[x['freq_duration'] for x in test_acc_data],              # use cut
     'mean_acc':[x['mean_acc'] for x in test_acc_data],
     'acc_exposure':[x['acc_exposure'] for x in test_acc_data],
     'learn_ratio':[x['learn_ratio'] for x in test_acc_data],
     'accuracy':[x['accuracy'] for x in test_acc_data],
-    # 'cut_test_count':[x['cut_test_count'] for x in test_acc_data],            # too similar with other columns
-    # 'cut_learn_count':[x['cut_learn_count'] for x in test_acc_data],          # too similar with other columns
+    'cut_test_count':[x['cut_test_count'] for x in test_acc_data],            # too similar with other columns
+    'cut_learn_count':[x['cut_learn_count'] for x in test_acc_data],          # too similar with other columns
     'cut_exp_count':[x['cut_exp_count'] for x in test_acc_data],
     'cut_hours_use':[x['cut_hours_use'] for x in test_acc_data],
     'cut_mean_learn_time':[x['cut_mean_learn_time'] for x in test_acc_data],
     'cut_mean_resp_time':[x['cut_mean_resp_time'] for x in test_acc_data],
     'cut_freq_all':[x['cut_freq_all'] for x in test_acc_data],
     'cut_freq_duration':[x['cut_freq_duration'] for x in test_acc_data],
-    # 'cut_acc_exposure':[x['cut_acc_exposure'] for x in test_acc_data],        # use original
-    # 'cut_learn_ratio':[x['cut_learn_ratio'] for x in test_acc_data],          # use original
+    'cut_acc_exposure':[x['cut_acc_exposure'] for x in test_acc_data],        # use original
+    'cut_learn_ratio':[x['cut_learn_ratio'] for x in test_acc_data],          # use original
     'school_id':[x['school_id'] for x in test_acc_data],
     'is_preview':[x['is_preview'] for x in test_acc_data],
     'unit_module':[x['unit_module'] for x in test_acc_data],
@@ -293,24 +293,26 @@ test_df['is_preview'] = test_df['is_preview'].astype(int)
 
 # Final features...
 logging.info('Final features:')
+
+# mse *
 feature_list = [
     # 'test_count',
     # 'learn_count',
     # 'exp_count',
     # 'hours_use',
-    # 'mean_learn_time',
-    # 'mean_resp_time',
+    'mean_learn_time',
+    'mean_resp_time',
     # 'freq_all',
     # 'freq_duration',
     'mean_acc',
     'acc_exposure', 
     'learn_ratio',
-    # 'cut_test_count',
-    # 'cut_learn_count',
+    'cut_test_count',
+    'cut_learn_count',
     'cut_exp_count',
     'cut_hours_use',
-    'cut_mean_learn_time',
-    'cut_mean_resp_time',
+    # 'cut_mean_learn_time',
+    # 'cut_mean_resp_time',
     'cut_freq_all', 
     'cut_freq_duration', 
     # 'cut_acc_exposure', 
@@ -325,17 +327,55 @@ feature_list = [
     'mean_acc_score_model',
     'mean_acc_unit'
 ]
+
+# # mse 0.0303
+# feature_list = [
+#     # 'test_count',
+#     # 'learn_count',
+#     # 'exp_count',
+#     # 'hours_use',
+#     # 'mean_learn_time',
+#     # 'mean_resp_time',
+#     # 'freq_all',
+#     # 'freq_duration',
+#     'mean_acc',
+#     'acc_exposure', 
+#     'learn_ratio',
+#     # 'cut_test_count',
+#     # 'cut_learn_count',
+#     'cut_exp_count',
+#     'cut_hours_use',
+#     'cut_mean_learn_time',
+#     'cut_mean_resp_time',
+#     'cut_freq_all', 
+#     'cut_freq_duration', 
+#     # 'cut_acc_exposure', 
+#     # 'cut_learn_ratio',
+#     'school_id',
+#     'is_preview',
+#     'unit_module',
+#     'scoring_model',
+#     'level',
+#     'teacher',
+#     'class',
+#     'mean_acc_score_model',
+#     'mean_acc_unit'
+# ]
 target_feature_name = 'accuracy'
+print(feature_list)
+print(len(feature_list))
 
 
 # Feature scaling
 
 logging.info('Feature scaling.')
 scaler = StandardScaler()
-scaler.fit(train_df.drop(['accuracy'], axis=1))
+scaler.fit(train_df[feature_list])
 train_df[feature_list] = scaler.transform(train_df[feature_list])
 test_df[feature_list] = scaler.transform(test_df[feature_list])
-
+print(train_df.head(3))
+print(train_df.shape)
+print(test_df.shape)
 
 # Train !
 
