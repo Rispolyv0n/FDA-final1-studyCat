@@ -8,8 +8,11 @@ from collections import defaultdict
 import pandas as pd
 import numpy as np
 
+import xgboost as xgb
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import AdaBoostRegressor
+from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.svm import SVR
 from sklearn.preprocessing import MinMaxScaler, RobustScaler, StandardScaler
 from sklearn.metrics import precision_recall_fscore_support
@@ -18,6 +21,14 @@ from sklearn.metrics import mean_squared_error
 
 import func.get_data as getData
 
+def train_model(model, train_x, train_y, test_x, test_y, model_name):
+    logging.info('Training model - ' + model_name + '...')
+    model.fit(train_x, train_y)
+    train_pred = model.predict(train_x)
+    test_pred = model.predict(test_x)
+    logging.info('Training mse: %.8f' % mean_squared_error(train_y, train_pred))
+    logging.info('Testing mse: %.8f' % mean_squared_error(test_y, test_pred))
+    return
 
 # Initializing
 logging.basicConfig(level=logging.INFO,
@@ -67,6 +78,7 @@ res = getData.get_personal_data(data,
         accuracy_after_exposure = True,
         mean_accuracy = True,
         mean_accuracy_each_scoring_model = True,
+        mean_accuracy_each_unit=True,
         school_id = True)
 
 
@@ -83,6 +95,7 @@ res_df = pd.DataFrame(data={
     'mean_acc':[x['mean_acc'] for x in res],
     'acc_exposure':[x['acc_exposure'] for x in res],
     'mean_acc_score_model':[x['mean_acc_score_model'] for x in res],
+    'mean_acc_unit':[x['mean_acc_unit'] for x in res],
     'school_id':[x['school_id'] for x in res],
     })
 
@@ -136,7 +149,8 @@ for record in train_acc_data:
         record['acc_exposure'] = row['acc_exposure']
         record['learn_ratio'] = row['learn_ratio']
         record['school_id'] = row['school_id']
-        record['mean_acc_score_model'] = row['mean_acc_score_model']
+        record['mean_acc_score_model'] = row['mean_acc_score_model'][record['scoring_model']]
+        record['mean_acc_unit'] = row['mean_acc_unit'][record['unit']]
         for feat_name in features:
             record['cut_'+feat_name] = row['cut_'+feat_name]
     c+=1
@@ -179,7 +193,8 @@ train_df = pd.DataFrame(data={
     'level':[x['level'] for x in train_acc_data],
     'teacher':[x['teacher'] for x in train_acc_data],
     'class':[x['class'] for x in train_acc_data],
-    # 'mean_acc_score_model':[x['mean_acc_score_model'] for x in train_acc_data] # is a list
+    'mean_acc_score_model':[x['mean_acc_score_model'] for x in train_acc_data],
+    'mean_acc_unit':[x['mean_acc_unit'] for x in train_acc_data]
     })
 
 print(train_df.shape)
@@ -213,7 +228,8 @@ for record in test_acc_data:
         record['acc_exposure'] = row['acc_exposure']
         record['learn_ratio'] = row['learn_ratio']
         record['school_id'] = row['school_id']
-        record['mean_acc_score_model'] = row['mean_acc_score_model']
+        record['mean_acc_score_model'] = row['mean_acc_score_model'][record['scoring_model']]
+        record['mean_acc_unit'] = row['mean_acc_unit'][record['unit']]
         for feat_name in features:
             record['cut_'+feat_name] = row['cut_'+feat_name]
     c+=1
@@ -255,7 +271,8 @@ test_df = pd.DataFrame(data={
     'level':[x['level'] for x in test_acc_data],
     'teacher':[x['teacher'] for x in test_acc_data],
     'class':[x['class'] for x in test_acc_data],
-    # 'mean_acc_score_model':[x['mean_acc_score_model'] for x in test_acc_data] # is a list
+    'mean_acc_score_model':[x['mean_acc_score_model'] for x in test_acc_data],
+    'mean_acc_unit':[x['mean_acc_unit'] for x in test_acc_data]
     })
 
 print(test_df.shape)
@@ -274,425 +291,84 @@ train_df['is_preview'] = train_df['is_preview'].astype(int)
 test_df['is_preview'] = test_df['is_preview'].astype(int)
 
 
+# Final features...
+logging.info('Final features:')
+feature_list = [
+    # 'test_count',
+    # 'learn_count',
+    # 'exp_count',
+    # 'hours_use',
+    # 'mean_learn_time',
+    # 'mean_resp_time',
+    # 'freq_all',
+    # 'freq_duration',
+    'mean_acc',
+    'acc_exposure', 
+    'learn_ratio',
+    # 'cut_test_count',
+    # 'cut_learn_count',
+    'cut_exp_count',
+    'cut_hours_use',
+    'cut_mean_learn_time',
+    'cut_mean_resp_time',
+    'cut_freq_all', 
+    'cut_freq_duration', 
+    # 'cut_acc_exposure', 
+    # 'cut_learn_ratio',
+    'school_id',
+    'is_preview',
+    'unit_module',
+    'scoring_model',
+    'level',
+    'teacher',
+    'class',
+    'mean_acc_score_model',
+    'mean_acc_unit'
+]
+target_feature_name = 'accuracy'
+
+
 # Feature scaling
-"""
+
 logging.info('Feature scaling.')
-print(train_df.head(3))
-print(test_df.head(3))
 scaler = StandardScaler()
 scaler.fit(train_df.drop(['accuracy'], axis=1))
-train_df[[
-        # 'test_count',
-        # 'learn_count',
-        # 'exp_count',
-        # 'hours_use',
-        # 'mean_learn_time',
-        # 'mean_resp_time',
-        # 'freq_all',
-        # 'freq_duration',
-        'mean_acc',
-        'acc_exposure', 
-        'learn_ratio',
-        # 'cut_test_count',
-        # 'cut_learn_count',
-        'cut_exp_count',
-        'cut_hours_use',
-        'cut_mean_learn_time',
-        'cut_mean_resp_time',
-        'cut_freq_all', 
-        'cut_freq_duration', 
-        # 'cut_acc_exposure', 
-        # 'cut_learn_ratio',
-        'school_id',
-        'is_preview',
-        'unit_module',
-        'scoring_model',
-        'level',
-        'teacher',
-        'class',
-        # 'mean_acc_score_model'
-        ]] = scaler.transform(train_df.drop(['accuracy'], axis=1))
-test_df[[
-        # 'test_count',
-        # 'learn_count',
-        # 'exp_count',
-        # 'hours_use',
-        # 'mean_learn_time',
-        # 'mean_resp_time',
-        # 'freq_all',
-        # 'freq_duration',
-        'mean_acc',
-        'acc_exposure', 
-        'learn_ratio',
-        # 'cut_test_count',
-        # 'cut_learn_count',
-        'cut_exp_count',
-        'cut_hours_use',
-        'cut_mean_learn_time',
-        'cut_mean_resp_time',
-        'cut_freq_all', 
-        'cut_freq_duration', 
-        # 'cut_acc_exposure', 
-        # 'cut_learn_ratio',
-        'school_id',
-        'is_preview',
-        'unit_module',
-        'scoring_model',
-        'level',
-        'teacher',
-        'class',
-        # 'mean_acc_score_model'
-        ]] = scaler.transform(test_df.drop(['accuracy'], axis=1))
-
-print(train_df.head(3))
-print(test_df.head(3))
-"""
-# logging.info('calculating correlation')
-# numeric_data = final_df[[
-#     'test_count',
-#     'learn_count',
-#     'exp_count',
-#     'hours_use',
-#     'mean_learn_time',
-#     'mean_resp_time',
-#     'freq_all',
-#     'freq_duration',
-#     'mean_acc',
-#     'acc_exposure',
-#     'learn_ratio',
-#     'accuracy']]
-# corr = numeric_data.corr()
+train_df[feature_list] = scaler.transform(train_df[feature_list])
+test_df[feature_list] = scaler.transform(test_df[feature_list])
 
 
-# model - lr
-logging.info('model - lr')
+# Train !
+
 model_lr = LinearRegression()
-model_lr.fit(
-    train_df[[
-        # 'test_count',
-        # 'learn_count',
-        # 'exp_count',
-        # 'hours_use',
-        # 'mean_learn_time',
-        # 'mean_resp_time',
-        # 'freq_all',
-        # 'freq_duration',
-        'mean_acc',
-        'acc_exposure', 
-        'learn_ratio',
-        # 'cut_test_count',
-        # 'cut_learn_count',
-        'cut_exp_count',
-        'cut_hours_use',
-        'cut_mean_learn_time',
-        'cut_mean_resp_time',
-        'cut_freq_all', 
-        'cut_freq_duration', 
-        # 'cut_acc_exposure', 
-        # 'cut_learn_ratio',
-        'school_id',
-        'is_preview',
-        'unit_module',
-        'scoring_model',
-        'level',
-        'teacher',
-        'class',
-        # 'mean_acc_score_model'
-        ]], 
-    train_df['accuracy']
-)
-
-lr_predict_train_y = model_lr.predict(train_df[[
-        # 'test_count',
-        # 'learn_count',
-        # 'exp_count',
-        # 'hours_use',
-        # 'mean_learn_time',
-        # 'mean_resp_time',
-        # 'freq_all',
-        # 'freq_duration',
-        'mean_acc',
-        'acc_exposure', 
-        'learn_ratio',
-        # 'cut_test_count',
-        # 'cut_learn_count',
-        'cut_exp_count',
-        'cut_hours_use',
-        'cut_mean_learn_time',
-        'cut_mean_resp_time',
-        'cut_freq_all', 
-        'cut_freq_duration', 
-        # 'cut_acc_exposure', 
-        # 'cut_learn_ratio',
-        'school_id',
-        'is_preview',
-        'unit_module',
-        'scoring_model',
-        'level',
-        'teacher',
-        'class',
-        # 'mean_acc_score_model'
-        ]] )
-print('training mse:')
-print(mean_squared_error(train_df['accuracy'], lr_predict_train_y))
-
-lr_predict_test_y = model_lr.predict(test_df[[
-        # 'test_count',
-        # 'learn_count',
-        # 'exp_count',
-        # 'hours_use',
-        # 'mean_learn_time',
-        # 'mean_resp_time',
-        # 'freq_all',
-        # 'freq_duration',
-        'mean_acc',
-        'acc_exposure', 
-        'learn_ratio',
-        # 'cut_test_count',
-        # 'cut_learn_count',
-        'cut_exp_count',
-        'cut_hours_use',
-        'cut_mean_learn_time',
-        'cut_mean_resp_time',
-        'cut_freq_all', 
-        'cut_freq_duration', 
-        # 'cut_acc_exposure', 
-        # 'cut_learn_ratio',
-        'school_id',
-        'is_preview',
-        'unit_module',
-        'scoring_model',
-        'level',
-        'teacher',
-        'class',
-        # 'mean_acc_score_model'
-        ]], )
-print('\ntesting mse:')
-print(mean_squared_error(test_df['accuracy'], lr_predict_test_y))
-
-
-# model - rf
-logging.info('model - rf')
 model_rf = RandomForestRegressor(verbose=1)
-model_rf.fit(
-    train_df[[
-        # 'test_count',
-        # 'learn_count',
-        # 'exp_count',
-        # 'hours_use',
-        # 'mean_learn_time',
-        # 'mean_resp_time',
-        # 'freq_all',
-        # 'freq_duration',
-        'mean_acc',
-        'acc_exposure', 
-        'learn_ratio',
-        # 'cut_test_count',
-        # 'cut_learn_count',
-        'cut_exp_count',
-        'cut_hours_use',
-        'cut_mean_learn_time',
-        'cut_mean_resp_time',
-        'cut_freq_all', 
-        'cut_freq_duration', 
-        # 'cut_acc_exposure', 
-        # 'cut_learn_ratio',
-        'school_id',
-        'is_preview',
-        'unit_module',
-        'scoring_model',
-        'level',
-        'teacher',
-        'class',
-        # 'mean_acc_score_model'
-        ]], 
-    train_df['accuracy']
-)
+# model_svr = SVR(verbose=True)
+model_ada = AdaBoostRegressor()
+model_gb = GradientBoostingRegressor(verbose=1)
+model_xgb = xgb.XGBRegressor()
 
-rf_predict_train_y = model_rf.predict(train_df[[
-        # 'test_count',
-        # 'learn_count',
-        # 'exp_count',
-        # 'hours_use',
-        # 'mean_learn_time',
-        # 'mean_resp_time',
-        # 'freq_all',
-        # 'freq_duration',
-        'mean_acc',
-        'acc_exposure', 
-        'learn_ratio',
-        # 'cut_test_count',
-        # 'cut_learn_count',
-        'cut_exp_count',
-        'cut_hours_use',
-        'cut_mean_learn_time',
-        'cut_mean_resp_time',
-        'cut_freq_all', 
-        'cut_freq_duration', 
-        # 'cut_acc_exposure', 
-        # 'cut_learn_ratio',
-        'school_id',
-        'is_preview',
-        'unit_module',
-        'scoring_model',
-        'level',
-        'teacher',
-        'class',
-        # 'mean_acc_score_model'
-        ]] )
-print('training mse:')
-print(mean_squared_error(train_df['accuracy'], rf_predict_train_y))
-print(len(train_df['accuracy']))
-print(len(rf_predict_train_y))
+model_dict = {
+    'linear regression': model_lr,
+    'random forest': model_rf,
+    'adaboost': model_ada,
+    'gradient boosting regressor': model_gb,
+    'xgboost regressor': model_xgb
+}
 
-rf_predict_test_y = model_rf.predict(test_df[[
-        # 'test_count',
-        # 'learn_count',
-        # 'exp_count',
-        # 'hours_use',
-        # 'mean_learn_time',
-        # 'mean_resp_time',
-        # 'freq_all',
-        # 'freq_duration',
-        'mean_acc',
-        'acc_exposure', 
-        'learn_ratio',
-        # 'cut_test_count',
-        # 'cut_learn_count',
-        'cut_exp_count',
-        'cut_hours_use',
-        'cut_mean_learn_time',
-        'cut_mean_resp_time',
-        'cut_freq_all', 
-        'cut_freq_duration', 
-        # 'cut_acc_exposure', 
-        # 'cut_learn_ratio',
-        'school_id',
-        'is_preview',
-        'unit_module',
-        'scoring_model',
-        'level',
-        'teacher',
-        'class',
-        # 'mean_acc_score_model'
-        ]], )
-print('\ntesting mse:')
-print(mean_squared_error(test_df['accuracy'], rf_predict_test_y))
-print(len(test_df['accuracy']))
-print(len(rf_predict_test_y))
+train_x = train_df[feature_list]
+train_y = train_df[target_feature_name]
+test_x = test_df[feature_list]
+test_y = test_df[target_feature_name]
 
-"""
-# model 2 - svr
-logging.info('model - svr')
-model_svr = SVR(verbose=True)
-model_svr.fit(
-    train_df[[
-        # 'test_count',
-        # 'learn_count',
-        # 'exp_count',
-        # 'hours_use',
-        # 'mean_learn_time',
-        # 'mean_resp_time',
-        # 'freq_all',
-        # 'freq_duration',
-        'mean_acc',
-        'acc_exposure', 
-        'learn_ratio',
-        # 'cut_test_count',
-        # 'cut_learn_count',
-        'cut_exp_count',
-        'cut_hours_use',
-        'cut_mean_learn_time',
-        'cut_mean_resp_time',
-        'cut_freq_all', 
-        'cut_freq_duration', 
-        # 'cut_acc_exposure', 
-        # 'cut_learn_ratio',
-        'school_id',
-        'is_preview',
-        'unit_module',
-        'scoring_model',
-        'level',
-        'teacher',
-        'class',
-        # 'mean_acc_score_model'
-        ]], 
-    train_df['accuracy']
-)
+for model_name, model in model_dict.items():
+    train_model(
+        model = model, 
+        train_x = train_x, 
+        train_y = train_y, 
+        test_x = test_x, 
+        test_y = test_y, 
+        model_name = model_name
+    )
 
-svr_predict_train_y = model_svr.predict(train_df[[
-        # 'test_count',
-        # 'learn_count',
-        # 'exp_count',
-        # 'hours_use',
-        # 'mean_learn_time',
-        # 'mean_resp_time',
-        # 'freq_all',
-        # 'freq_duration',
-        'mean_acc',
-        'acc_exposure', 
-        'learn_ratio',
-        # 'cut_test_count',
-        # 'cut_learn_count',
-        'cut_exp_count',
-        'cut_hours_use',
-        'cut_mean_learn_time',
-        'cut_mean_resp_time',
-        'cut_freq_all', 
-        'cut_freq_duration', 
-        # 'cut_acc_exposure', 
-        # 'cut_learn_ratio',
-        'school_id',
-        'is_preview',
-        'unit_module',
-        'scoring_model',
-        'level',
-        'teacher',
-        'class',
-        # 'mean_acc_score_model'
-        ]])
-print('training mse:')
-print(mean_squared_error(train_df['accuracy'], svr_predict_train_y))
 
-svc_predict_test_y = model_svr.predict(test_df[[
-        # 'test_count',
-        # 'learn_count',
-        # 'exp_count',
-        # 'hours_use',
-        # 'mean_learn_time',
-        # 'mean_resp_time',
-        # 'freq_all',
-        # 'freq_duration',
-        'mean_acc',
-        'acc_exposure', 
-        'learn_ratio',
-        # 'cut_test_count',
-        # 'cut_learn_count',
-        'cut_exp_count',
-        'cut_hours_use',
-        'cut_mean_learn_time',
-        'cut_mean_resp_time',
-        'cut_freq_all', 
-        'cut_freq_duration', 
-        # 'cut_acc_exposure', 
-        # 'cut_learn_ratio',
-        'school_id',
-        'is_preview',
-        'unit_module',
-        'scoring_model',
-        'level',
-        'teacher',
-        'class',
-        # 'mean_acc_score_model'
-        ]])
-print('\ntesting mse:')
-print(mean_squared_error(test_df['accuracy'], svc_predict_test_y))
-print(svc_predict_test_y)
 
-for i in range(5):
-    print('=====')
-    print(svc_predict_test_y[i])
-    print(test_df['accuracy'][i])
-
-"""
 

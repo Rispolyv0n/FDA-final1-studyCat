@@ -193,6 +193,7 @@ def get_personal_data(
         mean_accuracy_others = False,
         # acc of different score models
         mean_accuracy_each_scoring_model = False,
+        mean_accuracy_each_unit = False,
         # other acc
         accuracy_after_exposure = False,
         # others
@@ -207,6 +208,7 @@ def get_personal_data(
     duration_between_records_list = mean_duration_each_record(data)
     question_categories = ['spot', 'numbers', 'phonics', 'phonemes', 'singular', 'plural', 'letters', 'abc', 'sight']
     scoring_model_count = max([x['scoring_model'] for x in data]) + 1
+    unit_count = max([x['unit'] for x in data]) + 1
 
     # count
     count_of_record_list = [0 for _ in range(user_count)]
@@ -246,6 +248,9 @@ def get_personal_data(
     # acc - scoring_model
     count_of_accuracy_of_each_scoring_model = [[[] for _ in range(scoring_model_count)] for _ in range(user_count)]
 
+    # acc - unit
+    count_of_accuracy_of_each_unit = [[[] for _ in range(unit_count)] for _ in range(user_count)]
+
     # acc - exposure
     accuracy_exposure_list = get_correctness_after_exposure(data)
 
@@ -263,6 +268,7 @@ def get_personal_data(
             count_of_accuracy_list[cur_userId] += 1
             accuracy_list[cur_userId] += record['accuracy']
             count_of_accuracy_of_each_scoring_model[cur_userId][record['scoring_model']].append(record['accuracy'])
+            count_of_accuracy_of_each_unit[cur_userId][record['unit']].append(record['accuracy'])
 
         # hours_of_use
         if(len(record['experience']) > 0):
@@ -429,6 +435,17 @@ def get_personal_data(
                     else:
                         temp.append(mean(lst))
                 res[id]['mean_acc_score_model'] = temp.copy()
+        if(mean_accuracy_each_unit == True):
+            if(count_of_accuracy_list[id] == 0):
+                res[id]['mean_acc_unit'] = -1
+            else:
+                temp = []
+                for lst in count_of_accuracy_of_each_unit[id]:
+                    if(len(lst) == 0):
+                        temp.append(-1)
+                    else:
+                        temp.append(mean(lst))
+                res[id]['mean_acc_unit'] = temp.copy()
         if(accuracy_after_exposure == True):
             res[id]['acc_exposure'] = accuracy_exposure_list[id]
         if(school_id == True):
