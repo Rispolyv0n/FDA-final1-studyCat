@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 
 from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.svm import SVR
 from sklearn.preprocessing import MinMaxScaler, RobustScaler, StandardScaler
 from sklearn.metrics import precision_recall_fscore_support
@@ -28,7 +29,7 @@ pd.set_option('display.width', 1000)
 pd.set_option('display.expand_frame_repr', False)
 
 data_path = './data/data.json'
-train_test_ratio = 0.7
+train_test_ratio = 0.85
 
 
 # Reading data
@@ -45,7 +46,7 @@ logging.info('Data length(only acc): %d' % len(acc_data))
 
 # Shuffle
 logging.info('Shuffling & split train / test data.')
-train_acc_data, test_acc_data = getData.split_train_test(acc_data, train_test_ratio)
+train_acc_data, test_acc_data = getData.split_train_test_by_user(acc_data, train_test_ratio)
 logging.info('Training data length: %d' % len(train_acc_data))
 logging.info('Testing data length: %d' % len(test_acc_data))
 
@@ -274,6 +275,7 @@ test_df['is_preview'] = test_df['is_preview'].astype(int)
 
 
 # Feature scaling
+"""
 logging.info('Feature scaling.')
 print(train_df.head(3))
 print(test_df.head(3))
@@ -344,7 +346,7 @@ test_df[[
 
 print(train_df.head(3))
 print(test_df.head(3))
-
+"""
 # logging.info('calculating correlation')
 # numeric_data = final_df[[
 #     'test_count',
@@ -467,15 +469,122 @@ lr_predict_test_y = model_lr.predict(test_df[[
         ]], )
 print('\ntesting mse:')
 print(mean_squared_error(test_df['accuracy'], lr_predict_test_y))
-for i in range(5):
-    print('=====')
-    print(lr_predict_test_y[i])
-    print(test_df['accuracy'][i])
 
 
+# model - rf
+logging.info('model - rf')
+model_rf = RandomForestRegressor(verbose=1)
+model_rf.fit(
+    train_df[[
+        # 'test_count',
+        # 'learn_count',
+        # 'exp_count',
+        # 'hours_use',
+        # 'mean_learn_time',
+        # 'mean_resp_time',
+        # 'freq_all',
+        # 'freq_duration',
+        'mean_acc',
+        'acc_exposure', 
+        'learn_ratio',
+        # 'cut_test_count',
+        # 'cut_learn_count',
+        'cut_exp_count',
+        'cut_hours_use',
+        'cut_mean_learn_time',
+        'cut_mean_resp_time',
+        'cut_freq_all', 
+        'cut_freq_duration', 
+        # 'cut_acc_exposure', 
+        # 'cut_learn_ratio',
+        'school_id',
+        'is_preview',
+        'unit_module',
+        'scoring_model',
+        'level',
+        'teacher',
+        'class',
+        # 'mean_acc_score_model'
+        ]], 
+    train_df['accuracy']
+)
+
+rf_predict_train_y = model_rf.predict(train_df[[
+        # 'test_count',
+        # 'learn_count',
+        # 'exp_count',
+        # 'hours_use',
+        # 'mean_learn_time',
+        # 'mean_resp_time',
+        # 'freq_all',
+        # 'freq_duration',
+        'mean_acc',
+        'acc_exposure', 
+        'learn_ratio',
+        # 'cut_test_count',
+        # 'cut_learn_count',
+        'cut_exp_count',
+        'cut_hours_use',
+        'cut_mean_learn_time',
+        'cut_mean_resp_time',
+        'cut_freq_all', 
+        'cut_freq_duration', 
+        # 'cut_acc_exposure', 
+        # 'cut_learn_ratio',
+        'school_id',
+        'is_preview',
+        'unit_module',
+        'scoring_model',
+        'level',
+        'teacher',
+        'class',
+        # 'mean_acc_score_model'
+        ]] )
+print('training mse:')
+print(mean_squared_error(train_df['accuracy'], rf_predict_train_y))
+print(len(train_df['accuracy']))
+print(len(rf_predict_train_y))
+
+rf_predict_test_y = model_rf.predict(test_df[[
+        # 'test_count',
+        # 'learn_count',
+        # 'exp_count',
+        # 'hours_use',
+        # 'mean_learn_time',
+        # 'mean_resp_time',
+        # 'freq_all',
+        # 'freq_duration',
+        'mean_acc',
+        'acc_exposure', 
+        'learn_ratio',
+        # 'cut_test_count',
+        # 'cut_learn_count',
+        'cut_exp_count',
+        'cut_hours_use',
+        'cut_mean_learn_time',
+        'cut_mean_resp_time',
+        'cut_freq_all', 
+        'cut_freq_duration', 
+        # 'cut_acc_exposure', 
+        # 'cut_learn_ratio',
+        'school_id',
+        'is_preview',
+        'unit_module',
+        'scoring_model',
+        'level',
+        'teacher',
+        'class',
+        # 'mean_acc_score_model'
+        ]], )
+print('\ntesting mse:')
+print(mean_squared_error(test_df['accuracy'], rf_predict_test_y))
+print(len(test_df['accuracy']))
+print(len(rf_predict_test_y))
+
+"""
 # model 2 - svr
 logging.info('model - svr')
-model_svr = SVR()
+model_svr = SVR(verbose=True)
 model_svr.fit(
     train_df[[
         # 'test_count',
@@ -580,9 +689,10 @@ print('\ntesting mse:')
 print(mean_squared_error(test_df['accuracy'], svc_predict_test_y))
 print(svc_predict_test_y)
 
-for i in range(10):
+for i in range(5):
     print('=====')
-    print(lr_predict_test_y[i])
+    print(svc_predict_test_y[i])
     print(test_df['accuracy'][i])
 
+"""
 

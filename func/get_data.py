@@ -34,6 +34,24 @@ def split_train_test(data, train_ratio):
     test_data = data[train_max_id:]
     return train_data, test_data
 
+def split_train_test_by_user(data, train_ratio):
+    user_count = max( [ x['user'] for x in data ] ) + 1
+    everyone_record = [[] for _ in range(user_count)]
+    for record in data:
+        everyone_record[record['user']].append(record)
+    train_data = []
+    test_data = []
+    for user_record in everyone_record:
+        random.shuffle(user_record)
+        train_max_id = round(len(user_record)*train_ratio)
+        train_data += user_record[:train_max_id]
+        test_data += user_record[train_max_id:]
+    random.shuffle(train_data)
+    random.shuffle(test_data)
+    return train_data, test_data
+
+
+
 def generate_data_pair_for(acc_data, personal_data):
     n_teachers = max([x['teacher'] for x in acc_data]) + 1
     n_classes = max([x['class'] for x in acc_data]) + 1
