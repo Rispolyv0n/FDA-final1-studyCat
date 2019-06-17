@@ -157,6 +157,9 @@ question_res = getData.get_question_data(data)
 print(len(question_res['resp_each_scoring_model']))
 print(len(question_res['resp_each_unit']))
 print(len(question_res['resp_each_unit_module']))
+print(len(question_res['acc_each_scoring_model']))
+print(len(question_res['acc_each_unit']))
+print(len(question_res['acc_each_unit_module']))
 
 
 # append features - training data
@@ -192,6 +195,9 @@ for record in train_acc_data:
         record['resp_each_scoring_model'] = question_res['resp_each_scoring_model'][record['scoring_model']]
         record['resp_each_unit'] = question_res['resp_each_unit'][record['unit']]
         record['resp_each_unit_module'] = question_res['resp_each_unit_module'][record['unit_module']]
+        record['acc_each_scoring_model'] = question_res['acc_each_scoring_model'][record['scoring_model']]
+        record['acc_each_unit'] = question_res['acc_each_unit'][record['unit']]
+        record['acc_each_unit_module'] = question_res['acc_each_unit_module'][record['unit_module']]
     c+=1
     if(c%spaceNum==0):
         logging.info('appending data... %d / %d done' % (c, len(train_acc_data)) )
@@ -240,7 +246,10 @@ train_df = pd.DataFrame(data={
     'mean_resp_unit_module':[x['mean_resp_unit_module'] for x in train_acc_data],
     'resp_each_scoring_model':[x['resp_each_scoring_model'] for x in train_acc_data],
     'resp_each_unit':[x['resp_each_unit'] for x in train_acc_data],
-    'resp_each_unit_module':[x['resp_each_unit_module'] for x in train_acc_data]
+    'resp_each_unit_module':[x['resp_each_unit_module'] for x in train_acc_data],
+    'acc_each_scoring_model':[x['acc_each_scoring_model'] for x in train_acc_data],
+    'acc_each_unit':[x['acc_each_unit'] for x in train_acc_data],
+    'acc_each_unit_module':[x['acc_each_unit_module'] for x in train_acc_data]
     })
 
 print(train_df.shape)
@@ -286,6 +295,9 @@ for record in test_acc_data:
         record['resp_each_scoring_model'] = question_res['resp_each_scoring_model'][record['scoring_model']]
         record['resp_each_unit'] = question_res['resp_each_unit'][record['unit']]
         record['resp_each_unit_module'] = question_res['resp_each_unit_module'][record['unit_module']]
+        record['acc_each_scoring_model'] = question_res['acc_each_scoring_model'][record['scoring_model']]
+        record['acc_each_unit'] = question_res['acc_each_unit'][record['unit']]
+        record['acc_each_unit_module'] = question_res['acc_each_unit_module'][record['unit_module']]
     c+=1
     if(c%spaceNum==0):
         logging.info('appending data... %d / %d done' % (c, len(test_acc_data)) )
@@ -333,7 +345,10 @@ test_df = pd.DataFrame(data={
     'mean_resp_unit_module':[x['mean_resp_unit_module'] for x in test_acc_data],
     'resp_each_scoring_model':[x['resp_each_scoring_model'] for x in test_acc_data],
     'resp_each_unit':[x['resp_each_unit'] for x in test_acc_data],
-    'resp_each_unit_module':[x['resp_each_unit_module'] for x in test_acc_data]
+    'resp_each_unit_module':[x['resp_each_unit_module'] for x in test_acc_data],
+    'acc_each_scoring_model':[x['acc_each_scoring_model'] for x in test_acc_data],
+    'acc_each_unit':[x['acc_each_unit'] for x in test_acc_data],
+    'acc_each_unit_module':[x['acc_each_unit_module'] for x in test_acc_data]
     })
 
 print(test_df.shape)
@@ -393,7 +408,10 @@ feature_list = [
     'mean_resp_unit_module',
     'resp_each_scoring_model',
     'resp_each_unit',
-    'resp_each_unit_module'
+    'resp_each_unit_module',
+    'acc_each_scoring_model',
+    'acc_each_unit',
+    'acc_each_unit_module'
 ]
 
 target_feature_name = 'accuracy'
@@ -425,10 +443,10 @@ print(train_df[feature_list].head(3))
 # Train !
 
 model_lr = LinearRegression()
-model_rf = RandomForestRegressor(verbose=1)
+model_rf = RandomForestRegressor()
 # model_svr = SVR(verbose=True)
 model_ada = AdaBoostRegressor()
-model_gb = GradientBoostingRegressor(verbose=1)
+model_gb = GradientBoostingRegressor()
 model_xgb = xgb.XGBRegressor()
 
 model_dict = {

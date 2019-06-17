@@ -551,15 +551,47 @@ def get_personal_data(
 # ==========
 
 def get_question_data(data):
-    # resp time - scoring_model / unit / unit_module
-    resp_scoring_model_list = mean_resp_time_each_scoring_model_every_user(data)
-    resp_unit_list = mean_resp_time_each_unit_every_user(data)
-    resp_unit_module_list = mean_resp_time_each_unit_module_every_user(data)
-
     user_count = max( [ x['user'] for x in data ] ) + 1
     scoring_model_count = max([x['scoring_model'] for x in data]) + 1
     unit_count = max([x['unit'] for x in data]) + 1
     unit_module_count = max([x['unit_module'] for x in data]) + 1
+
+    # accuracy - scoring_model / unit / unit_module
+    count_of_accuracy_of_each_scoring_model = [[] for _ in range(scoring_model_count)]
+    count_of_accuracy_of_each_unit = [[] for _ in range(unit_count)]
+    count_of_accuracy_of_each_unit_module = [[] for _ in range(unit_module_count)]
+    for record in data:
+        if('accuracy' in record.keys()):
+            count_of_accuracy_of_each_scoring_model[record['scoring_model']].append(record['accuracy'])
+            count_of_accuracy_of_each_unit[record['unit']].append(record['accuracy'])
+            count_of_accuracy_of_each_unit_module[record['unit_module']].append(record['accuracy'])
+
+    result_acc_scoring_model = []
+    result_acc_unit = []
+    result_acc_unit_module = []
+
+    for lst in count_of_accuracy_of_each_scoring_model:
+        if(len(lst) == 0):
+            result_acc_scoring_model.append(-1)
+        else:
+            result_acc_scoring_model.append(mean(lst))
+
+    for lst in count_of_accuracy_of_each_unit:
+        if(len(lst) == 0):
+            result_acc_unit.append(-1)
+        else:
+            result_acc_unit.append(mean(lst))
+    
+    for lst in count_of_accuracy_of_each_unit_module:
+        if(len(lst) == 0):
+            result_acc_unit_module.append(-1)
+        else:
+            result_acc_unit_module.append(mean(lst))
+
+    # resp time - scoring_model / unit / unit_module
+    resp_scoring_model_list = mean_resp_time_each_scoring_model_every_user(data)
+    resp_unit_list = mean_resp_time_each_unit_every_user(data)
+    resp_unit_module_list = mean_resp_time_each_unit_module_every_user(data)
 
     result_scoring_model = []
     result_unit = []
@@ -602,6 +634,9 @@ def get_question_data(data):
     res['resp_each_scoring_model'] = result_scoring_model.copy()
     res['resp_each_unit'] = result_unit.copy()
     res['resp_each_unit_module'] = result_unit_module.copy()
+    res['acc_each_scoring_model'] = result_acc_scoring_model.copy()
+    res['acc_each_unit'] = result_acc_unit.copy()
+    res['acc_each_unit_module'] = result_acc_unit_module.copy()
 
     return res
 
