@@ -363,10 +363,10 @@ feature_list = [
     'class',
     'mean_acc_score_model',
     'mean_acc_unit',
-    'mean_acc_unit_module'
-    # 'mean_resp_score_model',
-    # 'mean_resp_unit',
-    # 'mean_resp_unit_module'
+    'mean_acc_unit_module',
+    'mean_resp_score_model',
+    'mean_resp_unit',
+    'mean_resp_unit_module'
 ]
 
 target_feature_name = 'accuracy'
