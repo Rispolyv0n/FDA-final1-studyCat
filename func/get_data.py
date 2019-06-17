@@ -149,7 +149,7 @@ def mean_duration_each_record(data):
     return user_mean_duration_rec
 
 # mean resp time of each score model(every user)
-def mean_resp_time_each_scoring_model(data):
+def mean_resp_time_each_scoring_model_every_user(data):
     user_count = max( [ x['user'] for x in data ] ) + 1
     scoring_model_count = max([x['scoring_model'] for x in data]) + 1
     user_resp_time_record = [[[] for _ in range(scoring_model_count)] for _ in range(user_count)]
@@ -169,7 +169,7 @@ def mean_resp_time_each_scoring_model(data):
     return result
 
 # mean resp time of each unit(every user)
-def mean_resp_time_each_unit(data):
+def mean_resp_time_each_unit_every_user(data):
     user_count = max( [ x['user'] for x in data ] ) + 1
     unit_count = max([x['unit'] for x in data]) + 1
     user_resp_time_record = [[[] for _ in range(unit_count)] for _ in range(user_count)]
@@ -189,7 +189,7 @@ def mean_resp_time_each_unit(data):
     return result
 
 # mean resp time of each unit module(every user)
-def mean_resp_time_each_unit_module(data):
+def mean_resp_time_each_unit_module_every_user(data):
     user_count = max( [ x['user'] for x in data ] ) + 1
     unitModule_count = max([x['unit_module'] for x in data]) + 1
     user_resp_time_record = [[[] for _ in range(unitModule_count)] for _ in range(user_count)]
@@ -317,9 +317,9 @@ def get_personal_data(
     count_of_accuracy_of_each_unit_module = [[[] for _ in range(unit_module_count)] for _ in range(user_count)]
 
     # resp time - scoring_model / unit / unit_module
-    resp_scoring_model_list = mean_resp_time_each_scoring_model(data)
-    resp_unit_list = mean_resp_time_each_unit(data)
-    resp_unit_module_list = mean_resp_time_each_unit_module(data)
+    resp_scoring_model_list = mean_resp_time_each_scoring_model_every_user(data)
+    resp_unit_list = mean_resp_time_each_unit_every_user(data)
+    resp_unit_module_list = mean_resp_time_each_unit_module_every_user(data)
 
     # acc - exposure
     accuracy_exposure_list = get_correctness_after_exposure(data)
@@ -544,4 +544,65 @@ def get_personal_data(
             res[id]['freq_duration'] = duration_between_records_list[id]
     
     return res
+
+
+# ==========
+# extract features of each question
+# ==========
+
+def get_question_data(data):
+    # resp time - scoring_model / unit / unit_module
+    resp_scoring_model_list = mean_resp_time_each_scoring_model_every_user(data)
+    resp_unit_list = mean_resp_time_each_unit_every_user(data)
+    resp_unit_module_list = mean_resp_time_each_unit_module_every_user(data)
+
+    user_count = max( [ x['user'] for x in data ] ) + 1
+    scoring_model_count = max([x['scoring_model'] for x in data]) + 1
+    unit_count = max([x['unit'] for x in data]) + 1
+    unit_module_count = max([x['unit_module'] for x in data]) + 1
+
+    result_scoring_model = []
+    result_unit = []
+    result_unit_module = []
+
+    for i in range(scoring_model_count):
+        temp = []
+        for j in range(user_count):
+            resp = resp_scoring_model_list[j][i]
+            if resp >= 0:
+                temp.append(resp)
+        if(len(temp) == 0):
+            result_scoring_model.append(-1)
+        else:
+            result_scoring_model.append(mean(temp))
+
+    for i in range(unit_count):
+        temp = []
+        for j in range(user_count):
+            resp = resp_unit_list[j][i]
+            if resp >= 0:
+                temp.append(resp)
+        if(len(temp) == 0):
+            result_unit.append(-1)
+        else:
+            result_unit.append(mean(temp))
+
+    for i in range(unit_module_count):
+        temp = []
+        for j in range(user_count):
+            resp = resp_unit_module_list[j][i]
+            if resp >= 0:
+                temp.append(resp)
+        if(len(temp) == 0):
+            result_unit_module.append(-1)
+        else:
+            result_unit_module.append(mean(temp))
+    
+    res = dict()
+    res['resp_each_scoring_model'] = result_scoring_model.copy()
+    res['resp_each_unit'] = result_unit.copy()
+    res['resp_each_unit_module'] = result_unit_module.copy()
+
+    return res
+
 

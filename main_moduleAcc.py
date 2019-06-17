@@ -149,6 +149,16 @@ for feat_name in features:
 print(temp_df.shape)
 print(temp_df.head(3))
 
+
+# calculate question-based data
+
+logging.info('Calculating question-based features...')
+question_res = getData.get_question_data(data)
+print(len(question_res['resp_each_scoring_model']))
+print(len(question_res['resp_each_unit']))
+print(len(question_res['resp_each_unit_module']))
+
+
 # append features - training data
 logging.info('Appending features to training data...')
 c = 0
@@ -157,7 +167,7 @@ for record in train_acc_data:
     cur_userId = record['user']
     if(cur_userId in temp_df.index):
         row = temp_df.loc[cur_userId]
-        # append new features
+        # append new personal features
         record['test_count'] = row['test_count']
         record['learn_count'] = row['learn_count']
         record['exp_count'] = row['exp_count']
@@ -178,6 +188,10 @@ for record in train_acc_data:
         record['mean_resp_unit_module'] = row['mean_resp_unit_module'][record['unit_module']]
         for feat_name in features:
             record['cut_'+feat_name] = row['cut_'+feat_name]
+        # append new question-based features
+        record['resp_each_scoring_model'] = question_res['resp_each_scoring_model'][record['scoring_model']]
+        record['resp_each_unit'] = question_res['resp_each_unit'][record['unit']]
+        record['resp_each_unit_module'] = question_res['resp_each_unit_module'][record['unit_module']]
     c+=1
     if(c%spaceNum==0):
         logging.info('appending data... %d / %d done' % (c, len(train_acc_data)) )
@@ -223,7 +237,10 @@ train_df = pd.DataFrame(data={
     'mean_acc_unit_module':[x['mean_acc_unit_module'] for x in train_acc_data],
     'mean_resp_score_model':[x['mean_resp_score_model'] for x in train_acc_data],
     'mean_resp_unit':[x['mean_resp_unit'] for x in train_acc_data],
-    'mean_resp_unit_module':[x['mean_resp_unit_module'] for x in train_acc_data]
+    'mean_resp_unit_module':[x['mean_resp_unit_module'] for x in train_acc_data],
+    'resp_each_scoring_model':[x['resp_each_scoring_model'] for x in train_acc_data],
+    'resp_each_unit':[x['resp_each_unit'] for x in train_acc_data],
+    'resp_each_unit_module':[x['resp_each_unit_module'] for x in train_acc_data]
     })
 
 print(train_df.shape)
@@ -265,6 +282,10 @@ for record in test_acc_data:
         record['mean_resp_unit_module'] = row['mean_resp_unit_module'][record['unit_module']]
         for feat_name in features:
             record['cut_'+feat_name] = row['cut_'+feat_name]
+        # append new question-based features
+        record['resp_each_scoring_model'] = question_res['resp_each_scoring_model'][record['scoring_model']]
+        record['resp_each_unit'] = question_res['resp_each_unit'][record['unit']]
+        record['resp_each_unit_module'] = question_res['resp_each_unit_module'][record['unit_module']]
     c+=1
     if(c%spaceNum==0):
         logging.info('appending data... %d / %d done' % (c, len(test_acc_data)) )
@@ -309,7 +330,10 @@ test_df = pd.DataFrame(data={
     'mean_acc_unit_module':[x['mean_acc_unit_module'] for x in test_acc_data],
     'mean_resp_score_model':[x['mean_resp_score_model'] for x in test_acc_data],
     'mean_resp_unit':[x['mean_resp_unit'] for x in test_acc_data],
-    'mean_resp_unit_module':[x['mean_resp_unit_module'] for x in test_acc_data]
+    'mean_resp_unit_module':[x['mean_resp_unit_module'] for x in test_acc_data],
+    'resp_each_scoring_model':[x['resp_each_scoring_model'] for x in test_acc_data],
+    'resp_each_unit':[x['resp_each_unit'] for x in test_acc_data],
+    'resp_each_unit_module':[x['resp_each_unit_module'] for x in test_acc_data]
     })
 
 print(test_df.shape)
@@ -366,24 +390,37 @@ feature_list = [
     'mean_acc_unit_module',
     'mean_resp_score_model',
     'mean_resp_unit',
-    'mean_resp_unit_module'
+    'mean_resp_unit_module',
+    'resp_each_scoring_model',
+    'resp_each_unit',
+    'resp_each_unit_module'
 ]
 
 target_feature_name = 'accuracy'
 print(feature_list)
 print(len(feature_list))
+print(train_df[feature_list].head(3))
 
 
 # Feature scaling
 
 # logging.info('Feature scaling.')
+# scaled_feature_list = [
+#     'mean_resp_score_model',
+#     'mean_resp_unit',
+#     'mean_resp_unit_module',
+#     'resp_each_scoring_model',
+#     'resp_each_unit',
+#     'resp_each_unit_module'
+# ]
 # scaler = StandardScaler()
-# scaler.fit(train_df[feature_list])
-# train_df[feature_list] = scaler.transform(train_df[feature_list])
-# test_df[feature_list] = scaler.transform(test_df[feature_list])
+# scaler.fit(train_df[scaled_feature_list])
+# train_df[scaled_feature_list] = scaler.transform(train_df[scaled_feature_list])
+# test_df[scaled_feature_list] = scaler.transform(test_df[scaled_feature_list])
 # print(train_df.head(3))
 # print(train_df.shape)
 # print(test_df.shape)
+
 
 # Train !
 
