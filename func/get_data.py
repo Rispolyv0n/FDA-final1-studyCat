@@ -148,6 +148,66 @@ def mean_duration_each_record(data):
             user_mean_duration_rec.append( round( (cur_duration_sum/cur_count).total_seconds() )/(60*60) )
     return user_mean_duration_rec
 
+# mean resp time of each score model(every user)
+def mean_resp_time_each_scoring_model(data):
+    user_count = max( [ x['user'] for x in data ] ) + 1
+    scoring_model_count = max([x['scoring_model'] for x in data]) + 1
+    user_resp_time_record = [[[] for _ in range(scoring_model_count)] for _ in range(user_count)]
+    for record in data:
+        cur_userId = record['user']
+        cur_scoringModel = record['scoring_model']
+        for exp in record['experience']:
+            if 's' in exp.keys():
+                user_resp_time_record[cur_userId][cur_scoringModel].append(exp['s'])
+    result = [[-1 for _ in range(scoring_model_count)] for _ in range(user_count)]
+    for i, user_record in enumerate(user_resp_time_record):
+        for j, score_model_record in enumerate(user_record):
+            if(len(score_model_record) == 0):
+                result[i][j] = -1
+            else:
+                result[i][j] = mean(score_model_record)
+    return result
+
+# mean resp time of each unit(every user)
+def mean_resp_time_each_unit(data):
+    user_count = max( [ x['user'] for x in data ] ) + 1
+    unit_count = max([x['unit'] for x in data]) + 1
+    user_resp_time_record = [[[] for _ in range(unit_count)] for _ in range(user_count)]
+    for record in data:
+        cur_userId = record['user']
+        cur_unitId = record['unit']
+        for exp in record['experience']:
+            if 's' in exp.keys():
+                user_resp_time_record[cur_userId][cur_unitId].append(exp['s'])
+    result = [[-1 for _ in range(unit_count)] for _ in range(user_count)]
+    for i, user_record in enumerate(user_resp_time_record):
+        for j, unit_record in enumerate(user_record):
+            if(len(unit_record) == 0):
+                result[i][j] = -1
+            else:
+                result[i][j] = mean(unit_record)
+    return result
+
+# mean resp time of each unit module(every user)
+def mean_resp_time_each_unit_module(data):
+    user_count = max( [ x['user'] for x in data ] ) + 1
+    unitModule_count = max([x['unit_module'] for x in data]) + 1
+    user_resp_time_record = [[[] for _ in range(unitModule_count)] for _ in range(user_count)]
+    for record in data:
+        cur_userId = record['user']
+        cur_unitModuleId = record['unit_module']
+        for exp in record['experience']:
+            if 's' in exp.keys():
+                user_resp_time_record[cur_userId][cur_unitModuleId].append(exp['s'])
+    result = [[-1 for _ in range(unitModule_count)] for _ in range(user_count)]
+    for i, user_record in enumerate(user_resp_time_record):
+        for j, unitModule_record in enumerate(user_record):
+            if(len(unitModule_record) == 0):
+                result[i][j] = -1
+            else:
+                result[i][j] = mean(unitModule_record)
+    return result
+
 
 
 # ==========
@@ -176,9 +236,13 @@ def get_personal_data(
         mean_response_time = False,
         mean_learning_time = False,
         freq_all = False,
-        freq_week = False, #
-        freq_month = False, #
+        freq_week = False, # not done
+        freq_month = False, # not done
         freq_duration = False,
+        # resp time of different score models / units / unit modules
+        mean_resp_time_unit = False,
+        mean_resp_time_unit_module = False,
+        mean_resp_time_scoring_model = False,
         # acc
         mean_accuracy = False,
         # acc of different question categories
@@ -191,9 +255,10 @@ def get_personal_data(
         mean_accuracy_abc = False,
         mean_accuracy_sight = False,
         mean_accuracy_others = False,
-        # acc of different score models
+        # acc of different score models / units / unit modules
         mean_accuracy_each_scoring_model = False,
         mean_accuracy_each_unit = False,
+        mean_accuracy_each_unit_module = False,
         # other acc
         accuracy_after_exposure = False,
         # others
@@ -209,6 +274,7 @@ def get_personal_data(
     question_categories = ['spot', 'numbers', 'phonics', 'phonemes', 'singular', 'plural', 'letters', 'abc', 'sight']
     scoring_model_count = max([x['scoring_model'] for x in data]) + 1
     unit_count = max([x['unit'] for x in data]) + 1
+    unit_module_count = max([x['unit_module'] for x in data]) + 1
 
     # count
     count_of_record_list = [0 for _ in range(user_count)]
@@ -245,11 +311,15 @@ def get_personal_data(
     correct_sight_list = [0 for _ in range(user_count)]
     correct_others_list = [0 for _ in range(user_count)]
 
-    # acc - scoring_model
+    # acc - scoring_model / unit / unit_module
     count_of_accuracy_of_each_scoring_model = [[[] for _ in range(scoring_model_count)] for _ in range(user_count)]
-
-    # acc - unit
     count_of_accuracy_of_each_unit = [[[] for _ in range(unit_count)] for _ in range(user_count)]
+    count_of_accuracy_of_each_unit_module = [[[] for _ in range(unit_module_count)] for _ in range(user_count)]
+
+    # resp time - scoring_model / unit / unit_module
+    resp_scoring_model_list = mean_resp_time_each_scoring_model(data)
+    resp_unit_list = mean_resp_time_each_unit(data)
+    resp_unit_module_list = mean_resp_time_each_unit_module(data)
 
     # acc - exposure
     accuracy_exposure_list = get_correctness_after_exposure(data)
@@ -269,6 +339,7 @@ def get_personal_data(
             accuracy_list[cur_userId] += record['accuracy']
             count_of_accuracy_of_each_scoring_model[cur_userId][record['scoring_model']].append(record['accuracy'])
             count_of_accuracy_of_each_unit[cur_userId][record['unit']].append(record['accuracy'])
+            count_of_accuracy_of_each_unit_module[cur_userId][record['unit_module']].append(record['accuracy'])
 
         # hours_of_use
         if(len(record['experience']) > 0):
@@ -446,8 +517,25 @@ def get_personal_data(
                     else:
                         temp.append(mean(lst))
                 res[id]['mean_acc_unit'] = temp.copy()
+        if(mean_accuracy_each_unit_module == True):
+            if(count_of_accuracy_list[id] == 0):
+                res[id]['mean_acc_unit_module'] = -1
+            else:
+                temp = []
+                for lst in count_of_accuracy_of_each_unit_module[id]:
+                    if(len(lst) == 0):
+                        temp.append(-1)
+                    else:
+                        temp.append(mean(lst))
+                res[id]['mean_acc_unit_module'] = temp.copy()
+        if(mean_resp_time_scoring_model == True):
+            res[id]['mean_resp_score_model'] = resp_scoring_model_list[id].copy()
+        if(mean_resp_time_unit == True):
+            res[id]['mean_resp_unit'] = resp_unit_list[id].copy()
+        if(mean_resp_time_unit_module == True):
+            res[id]['mean_resp_unit_module'] = resp_unit_module_list[id].copy()
         if(accuracy_after_exposure == True):
-            res[id]['acc_exposure'] = accuracy_exposure_list[id]
+            res[id]['acc_exposure'] = accuracy_exposure_list[id].copy()
         if(school_id == True):
             res[id]['school_id'] = id_of_school_id_list[id]
         if(freq_all == True):

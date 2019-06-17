@@ -80,7 +80,23 @@ res = getData.get_personal_data(data,
         mean_accuracy = True,
         mean_accuracy_each_scoring_model = True,
         mean_accuracy_each_unit=True,
-        school_id = True)
+        mean_accuracy_each_unit_module = True,
+        school_id = True,
+        # acc of different question categories
+        mean_accuracy_spot = False,
+        mean_accuracy_numbers = False,
+        mean_accuracy_phonics = False,
+        mean_accuracy_phonemes = False,
+        mean_accuracy_singplu = False,
+        mean_accuracy_letters = False,
+        mean_accuracy_abc = False,
+        mean_accuracy_sight = False,
+        mean_accuracy_others = False,
+        # resp time of different score models / units / unit modules
+        mean_resp_time_unit = True,
+        mean_resp_time_unit_module = True,
+        mean_resp_time_scoring_model = True
+    )
 
 
 logging.info('Transforming features -> pandas.DataFrame')
@@ -97,7 +113,11 @@ res_df = pd.DataFrame(data={
     'acc_exposure':[x['acc_exposure'] for x in res],
     'mean_acc_score_model':[x['mean_acc_score_model'] for x in res],
     'mean_acc_unit':[x['mean_acc_unit'] for x in res],
+    'mean_acc_unit_module':[x['mean_acc_unit_module'] for x in res],
     'school_id':[x['school_id'] for x in res],
+    'mean_resp_score_model':[x['mean_resp_score_model'] for x in res],
+    'mean_resp_unit':[x['mean_resp_unit'] for x in res],
+    'mean_resp_unit_module':[x['mean_resp_unit_module'] for x in res]
     })
 
 temp_df = res_df[(res_df['exp_count'] > 0) & (res_df['mean_acc']>=0)]
@@ -152,6 +172,10 @@ for record in train_acc_data:
         record['school_id'] = row['school_id']
         record['mean_acc_score_model'] = row['mean_acc_score_model'][record['scoring_model']]
         record['mean_acc_unit'] = row['mean_acc_unit'][record['unit']]
+        record['mean_acc_unit_module'] = row['mean_acc_unit_module'][record['unit_module']]
+        record['mean_resp_score_model'] = row['mean_resp_score_model'][record['scoring_model']]
+        record['mean_resp_unit'] = row['mean_resp_unit'][record['unit']]
+        record['mean_resp_unit_module'] = row['mean_resp_unit_module'][record['unit_module']]
         for feat_name in features:
             record['cut_'+feat_name] = row['cut_'+feat_name]
     c+=1
@@ -195,7 +219,11 @@ train_df = pd.DataFrame(data={
     'teacher':[x['teacher'] for x in train_acc_data],
     'class':[x['class'] for x in train_acc_data],
     'mean_acc_score_model':[x['mean_acc_score_model'] for x in train_acc_data],
-    'mean_acc_unit':[x['mean_acc_unit'] for x in train_acc_data]
+    'mean_acc_unit':[x['mean_acc_unit'] for x in train_acc_data],
+    'mean_acc_unit_module':[x['mean_acc_unit_module'] for x in train_acc_data],
+    'mean_resp_score_model':[x['mean_resp_score_model'] for x in train_acc_data],
+    'mean_resp_unit':[x['mean_resp_unit'] for x in train_acc_data],
+    'mean_resp_unit_module':[x['mean_resp_unit_module'] for x in train_acc_data]
     })
 
 print(train_df.shape)
@@ -231,6 +259,10 @@ for record in test_acc_data:
         record['school_id'] = row['school_id']
         record['mean_acc_score_model'] = row['mean_acc_score_model'][record['scoring_model']]
         record['mean_acc_unit'] = row['mean_acc_unit'][record['unit']]
+        record['mean_acc_unit_module'] = row['mean_acc_unit_module'][record['unit_module']]
+        record['mean_resp_score_model'] = row['mean_resp_score_model'][record['scoring_model']]
+        record['mean_resp_unit'] = row['mean_resp_unit'][record['unit']]
+        record['mean_resp_unit_module'] = row['mean_resp_unit_module'][record['unit_module']]
         for feat_name in features:
             record['cut_'+feat_name] = row['cut_'+feat_name]
     c+=1
@@ -273,7 +305,11 @@ test_df = pd.DataFrame(data={
     'teacher':[x['teacher'] for x in test_acc_data],
     'class':[x['class'] for x in test_acc_data],
     'mean_acc_score_model':[x['mean_acc_score_model'] for x in test_acc_data],
-    'mean_acc_unit':[x['mean_acc_unit'] for x in test_acc_data]
+    'mean_acc_unit':[x['mean_acc_unit'] for x in test_acc_data],
+    'mean_acc_unit_module':[x['mean_acc_unit_module'] for x in test_acc_data],
+    'mean_resp_score_model':[x['mean_resp_score_model'] for x in test_acc_data],
+    'mean_resp_unit':[x['mean_resp_unit'] for x in test_acc_data],
+    'mean_resp_unit_module':[x['mean_resp_unit_module'] for x in test_acc_data]
     })
 
 print(test_df.shape)
@@ -326,7 +362,11 @@ feature_list = [
     'teacher',
     'class',
     'mean_acc_score_model',
-    'mean_acc_unit'
+    'mean_acc_unit',
+    'mean_acc_unit_module'
+    # 'mean_resp_score_model',
+    # 'mean_resp_unit',
+    # 'mean_resp_unit_module'
 ]
 
 target_feature_name = 'accuracy'
