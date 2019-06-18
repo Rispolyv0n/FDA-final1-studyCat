@@ -472,36 +472,31 @@ model_info = [
     {
         'name': 'adaboost', # mse 0.0246
         'model': model_ada,
-        'param': {
-            'n_estimators': [50, 150, 300] # 150
-        }
+        'param': {}
     },
     {
         'name': 'gradient boosting regressor', # mse 0.0220
         'model': model_gb,
         'param': {
-            'n_estimators': [100, 300], # 300
-            'max_depth': [3, 10], # 3
-            'max_features': [None, 'sqrt', 'log2'] # None
+            'n_estimators': [200, 300, 500], # 200
+            'max_depth': [3, 5], # 3
         }
     },
     {
         'name': 'xgboost regressor', # mse 0.0220
         'model': model_xgb,
         'param': {
-            'max_depth': [3, 8, 10], # 3
-            'n_estimators': [100, 200], # 200
-            'booster': ['gbtree', 'gblinear', 'dart'], # dart
-            'gamma': [0, 0.0001], # 0.0001
+            'n_estimators': [200, 300, 500], # 200
+            'booster': ['dart'], # dart
+            'gamma': [0.0001, 0.00001], # 0.0001
         }
     },
     {
         'name': 'random forest', # mse 0.0222
         'model': model_rf,
         'param': {
-            'n_estimators': [100, 200, 300], # 300
-            'max_depth': [3, 5, 8], # 8
-            'max_features': [None, 'auto', 'sqrt', 'log2'] # None
+            'n_estimators': [300, 500, 800], # 300
+            'max_depth': [5, 8, 10], # 8
         }
     },
 ]
