@@ -10,6 +10,7 @@ import pandas as pd
 import numpy as np
 
 import xgboost as xgb
+from sklearn.model_selection import GridSearchCV
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import AdaBoostRegressor
@@ -29,6 +30,20 @@ def train_model(model, train_x, train_y, test_x, test_y, model_name):
     test_pred = model.predict(test_x)
     logging.info('Training rmse: %.8f' % math.sqrt(mean_squared_error(train_y, train_pred)))
     logging.info('Testing rmse: %.8f' % math.sqrt(mean_squared_error(test_y, test_pred)))
+    return
+
+def grid_search_for_models(model, param, name, train_x, train_y):
+    logging.info('Start grid searching - ' + name)
+    gs = GridSearchCV(estimator=model,  
+                        param_grid=param,
+                        scoring='neg_mean_squared_error',
+                        cv=5,
+                        n_jobs=2,
+                        verbose=2)
+    gs.fit(train_x, train_y)
+    print(gs.best_params_)
+    print(gs.best_score_)
+    logging.info('=====================================')
     return
 
 # Initializing
@@ -440,36 +455,69 @@ print(train_df[feature_list].head(3))
 # print(test_df.shape)
 
 
-# Train !
+# Grid Search !
 
 model_lr = LinearRegression()
-model_rf = RandomForestRegressor(n_estimators=300, max_depth=8, max_features=None)
-# model_svr = SVR(verbose=True)
-model_ada = AdaBoostRegressor(n_estimators=150)
-model_gb = GradientBoostingRegressor(n_estimators=300, max_depth=3, max_features=None)
-model_xgb = xgb.XGBRegressor(n_estimators=200, max_depth=3, booster='dart', gamma=0.0001)
+model_rf = RandomForestRegressor(criterion='mse')
+model_ada = AdaBoostRegressor()
+model_gb = GradientBoostingRegressor(criterion='friedman_mse')
+model_xgb = xgb.XGBRegressor()
 
-model_dict = {
-    'linear regression': model_lr,
-    'random forest': model_rf,
-    'adaboost': model_ada,
-    'gradient boosting regressor': model_gb,
-    'xgboost regressor': model_xgb
-}
+model_info = [
+    {
+        'name': 'linear regression', # mse 0.0225
+        'model': model_lr,
+        'param': {}
+    },
+    {
+        'name': 'adaboost', # mse 0.0246
+        'model': model_ada,
+        'param': {
+            'n_estimators': [50, 150, 300] # 150
+        }
+    },
+    {
+        'name': 'gradient boosting regressor', # mse 0.0220
+        'model': model_gb,
+        'param': {
+            'n_estimators': [100, 300], # 300
+            'max_depth': [3, 10], # 3
+            'max_features': [None, 'sqrt', 'log2'] # None
+        }
+    },
+    {
+        'name': 'xgboost regressor', # mse 0.0220
+        'model': model_xgb,
+        'param': {
+            'max_depth': [3, 8, 10], # 3
+            'n_estimators': [100, 200], # 200
+            'booster': ['gbtree', 'gblinear', 'dart'], # dart
+            'gamma': [0, 0.0001], # 0.0001
+        }
+    },
+    {
+        'name': 'random forest', # mse 0.0222
+        'model': model_rf,
+        'param': {
+            'n_estimators': [100, 200, 300], # 300
+            'max_depth': [3, 5, 8], # 8
+            'max_features': [None, 'auto', 'sqrt', 'log2'] # None
+        }
+    },
+]
 
 train_x = train_df[feature_list]
 train_y = train_df[target_feature_name]
 test_x = test_df[feature_list]
 test_y = test_df[target_feature_name]
 
-for model_name, model in model_dict.items():
-    train_model(
-        model = model, 
-        train_x = train_x, 
-        train_y = train_y, 
-        test_x = test_x, 
-        test_y = test_y, 
-        model_name = model_name
+for info in model_info:
+    grid_search_for_models(
+        model = info['model'],
+        param = info['param'],
+        name = info['name'],
+        train_x = train_x,
+        train_y = train_y
     )
 
 
